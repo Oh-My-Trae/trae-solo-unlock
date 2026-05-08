@@ -1,20 +1,20 @@
-- [ ] AGENTS.md 已创建，包含 git commit 规则和项目上下文
-- [ ] 对 TRAE SOLO CN 核心启动流程有完整认知（启动脚本 → Electron主进程 → 工作台）
-- [ ] 对 product.json 关键配置项有完整解析（API端点、认证、遥测、AI限制、沙箱、功能开关）
-- [ ] 对 manifest.json 配置有完整解析（应用标识、网络配置、域名白名单）
-- [ ] 对 desktop.config.js 场景配置有完整解析（工作台布局、默认设置）
-- [ ] 对 AI Agent 模块架构有完整认知（Rust原生、端口40005、通信协议、环境变量）
-- [ ] 对 CKG 模块架构有完整认知（Rust原生、端口50000、本地嵌入、通信协议）
-- [ ] 对 Sandbox 模块架构有完整认知（DLL组成、文件系统RW/RO控制、网络控制）
-- [ ] 对 MCP 扩展系统有完整认知（builtin-mcp连接器、Computer Use、权限管理、JXA）
-- [ ] 对 Shell 执行扩展有完整认知（命令执行协议、Shell初始化、输出缓冲）
-- [ ] 对集成扩展有完整认知（Supabase/Vercel集成、默认禁用状态）
-- [ ] 对工作台前端架构有完整认知（Solo Lite模式、共享进程、扩展宿主）
-- [ ] 对安全模型有完整认知（命令黑名单/白名单、沙箱RW/RO列表、扩展控制）
-- [ ] 对认证体系有完整认知（Trae/字节跳动/GitHub OAuth、authConfig密钥）
-- [ ] 对遥测系统有完整认知（Tea/Slardar引擎配置、appId/bid）
-- [ ] 所有研究结果已持久化到知识图谱（Memory MCP）
-- [ ] spec.md 已编写完成
-- [ ] tasks.md 已编写完成
-- [ ] checklist.md 已编写完成
-- [ ] 已执行 git commit 提交所有文档
+- [x] AGENTS.md 已创建，包含 git commit 规则和项目上下文
+- [x] 对 TRAE SOLO CN 核心启动流程有完整认知（启动脚本 → Electron主进程 → 工作台）
+- [x] 对 product.json 关键配置项有完整解析（API端点、认证、遥测、AI限制、沙箱、功能开关）
+- [x] 对 manifest.json 配置有完整解析（应用标识、网络配置、域名白名单）
+- [x] 对 desktop.config.js 场景配置有完整解析（工作台布局、默认设置）
+- [x] 对 AI Agent 模块架构有完整认知（Rust原生、端口40005、通信协议、环境变量）
+- [x] 对 CKG 模块架构有完整认知（Rust原生、端口50000、本地嵌入、通信协议）
+- [x] 对 Sandbox 模块架构有完整认知（DLL组成、文件系统RW/RO控制、网络控制）
+- [x] 对 MCP 扩展系统有完整认知（builtin-mcp连接器、Computer Use、权限管理、JXA）
+- [x] 对 Shell 执行扩展有完整认知（命令执行协议、Shell初始化、输出缓冲）
+- [x] 对集成扩展有完整认知（Supabase/Vercel集成、默认禁用状态）
+- [x] 对工作台前端架构有完整认知（Solo Lite模式、共享进程、扩展宿主）
+- [x] 对安全模型有完整认知（命令黑名单/白名单、沙箱RW/RO列表、扩展控制）
+- [x] 对认证体系有完整认知（Trae/字节跳动/GitHub OAuth、authConfig密钥）
+- [x] 对遥测系统有完整认知（Tea/Slardar引擎配置、appId/bid）
+- [x] 所有研究结果已持久化到知识图谱（Memory MCP）
+- [x] spec.md 已编写完成
+- [x] tasks.md 已编写完成
+- [x] checklist.md 已编写完成
+- [x] 已执行 git commit 提交所有文档

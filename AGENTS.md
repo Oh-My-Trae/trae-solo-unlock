@@ -1,71 +1,22 @@
-# AGENTS.md
+# AGENTS.md — AI 启动引导
 
-## Git Commit 规则
+## 项目
+TRAE SOLO CN 魔改仓库。源码: `D:\apps\TRAE SOLO CN`
 
-每次完成任务后，必须执行 git commit。遵循以下规范：
+## 知识获取（必读）
+**开始任何任务前，必须先查询 Memory MCP 获取已持久化的研究知识：**
+- `mcp_Memory_search_nodes("TRAE SOLO CN")` → 获取架构/模块/配置/安全模型全貌
+- `mcp_Memory_search_nodes("product.json")` → API端点/认证/遥测/沙箱配置
+- `mcp_Memory_search_nodes("AI Agent")` → 原生模块通信协议
+- `mcp_Memory_read_graph()` → 读取完整知识图谱
 
-### Commit Message 格式
+## 协作规则
+1. 任务完成后必须 `git add -A && git commit`
+2. Commit格式: `<type>(<scope>): <desc>` → 详见 `docs/git-conventions.md`
+3. 新研究发现必须持久化到 Memory MCP（create_entities/add_observations）
 
-```
-<type>(<scope>): <description>
-```
-
-### Type 类型
-
-- `feat`: 新功能
-- `fix`: 修复bug
-- `refactor`: 重构（不改变功能）
-- `docs`: 文档变更
-- `style`: 代码格式调整（不影响逻辑）
-- `chore`: 构建/工具/配置变更
-- `perf`: 性能优化
-- `test`: 测试相关
-- `ci`: CI/CD 相关
-- `revert`: 回滚
-
-### Scope 范围
-
-- `core`: 核心架构/主进程
-- `agent`: AI Agent 模块
-- `ckg`: CKG 模块
-- `sandbox`: 沙箱模块
-- `mcp`: MCP 扩展
-- `shell`: Shell 执行扩展
-- `config`: 产品配置 (product.json 等)
-- `auth`: 认证系统
-- `ui`: 工作台/前端
-- `ext`: 扩展系统
-- `telemetry`: 遥测/监控
-- `i18n`: 国际化
-
-### 示例
-
-```
-feat(config): 添加自定义 API 端点配置
-fix(agent): 修复 AI Agent 端口冲突问题
-refactor(sandbox): 重构沙箱权限检查逻辑
-chore(core): 初始化项目仓库
-```
-
-### 执行流程
-
-1. 完成任务后，运行 `git add -A`
-2. 运行 `git commit -m "<type>(<scope>): <description>"`
-3. 如果有多个逻辑变更，分别提交
-
-## 项目上下文
-
-本项目是 TRAE SOLO CN 的魔改仓库，源码位于 `D:\apps\TRAE SOLO CN`。
-
-### 关键文件路径
-
-- 产品配置: `D:\apps\TRAE SOLO CN\resources\app\product.json`
-- 应用清单: `D:\apps\TRAE SOLO CN\manifest.json`
-- 主进程: `D:\apps\TRAE SOLO CN\resources\app\out\main.js`
-- 工作台: `D:\apps\TRAE SOLO CN\resources\app\out\vs\code\electron-browser\solo\workbench.js`
-- 桌面配置: `D:\apps\TRAE SOLO CN\resources\app\out\vs\code\electron-browser\scenes\desktop.config.js`
-- AI Agent: `D:\apps\TRAE SOLO CN\resources\app\modules\ai-agent\`
-- CKG: `D:\apps\TRAE SOLO CN\resources\app\modules\ckg\`
-- Sandbox: `D:\apps\TRAE SOLO CN\resources\app\modules\sandbox\`
-- MCP 扩展: `D:\apps\TRAE SOLO CN\resources\app\extensions\byted-solo.builtin-mcp\`
-- Shell 扩展: `D:\apps\TRAE SOLO CN\resources\app\extensions\cloudide.icube-agent-shell-exec\`
+## 详细文档（按需读取）
+- `docs/git-conventions.md` — Git提交规范
+- `docs/project-context.md` — 关键文件路径与架构
+- `docs/ai-collaboration.md` — 跨AI协作协议
+- `.trae/specs/research-solo-source/` — 源码研究规格文档
