@@ -1,0 +1,64 @@
+{
+  "name": "computer-use-enhanced",
+  "displayName": "Computer Use Enhanced",
+  "publisher": "trae-solo-unlock",
+  "description": "Enhanced Computer Use MCP tools for TRAE SOLO CN - OCR, window management, clipboard, smart screenshots",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["*"],
+  "enabledApiProposals": ["trae"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cuEnhanced.ocrScreen",
+        "title": "Computer Use Enhanced: OCR Screen"
+      },
+      {
+        "command": "cuEnhanced.manageWindows",
+        "title": "Computer Use Enhanced: Manage Windows"
+      },
+      {
+        "command": "cuEnhanced.clipboardHistory",
+        "title": "Computer Use Enhanced: Clipboard History"
+      },
+      {
+        "command": "cuEnhanced.smartScreenshot",
+        "title": "Computer Use Enhanced: Smart Screenshot"
+      },
+      {
+        "command": "cuEnhanced.applyLayout",
+        "title": "Computer Use Enhanced: Apply Layout"
+      }
+    ],
+    "configuration": {
+      "title": "Computer Use Enhanced",
+      "properties": {
+        "cuEnhanced.screenshotDir": {
+          "type": "string",
+          "default": "",
+          "description": "Directory for storing screenshots. Default: system temp directory."
+        },
+        "cuEnhanced.clipboardHistoryMax": {
+          "type": "number",
+          "default": 100,
+          "description": "Maximum clipboard history items to keep."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.82.0",
+    "typescript": "^5.8.0"
+  }
+}

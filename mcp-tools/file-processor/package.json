@@ -1,0 +1,67 @@
+{
+  "name": "file-processor",
+  "displayName": "File Processor MCP",
+  "publisher": "trae-solo-unlock",
+  "description": "File batch processing MCP tool for TRAE SOLO CN - search, replace, and statistics",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "enabledApiProposals": [
+    "trae"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fileProcessor.search",
+        "title": "File Processor: Search in Files"
+      },
+      {
+        "command": "fileProcessor.replace",
+        "title": "File Processor: Replace in Files"
+      },
+      {
+        "command": "fileProcessor.statistics",
+        "title": "File Processor: File Statistics"
+      }
+    ],
+    "configuration": {
+      "title": "File Processor MCP",
+      "properties": {
+        "fileProcessor.maxFileSize": {
+          "type": "number",
+          "default": 10485760,
+          "description": "Maximum file size in bytes to process (default 10MB)"
+        },
+        "fileProcessor.maxResults": {
+          "type": "number",
+          "default": 1000,
+          "description": "Maximum number of search results to return"
+        },
+        "fileProcessor.excludePatterns": {
+          "type": "array",
+          "default": ["node_modules", ".git", "dist", "build", "__pycache__", ".venv"],
+          "description": "Glob patterns to exclude from file search"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.82.0",
+    "typescript": "^5.8.0"
+  }
+}

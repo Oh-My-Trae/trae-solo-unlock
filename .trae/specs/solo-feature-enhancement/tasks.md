@@ -120,20 +120,33 @@
 
 ## Phase 3: 自动化基础设施（构建开发工具链）
 
-- [ ] Task 11: 构建补丁管理系统 (I1)
-  - [ ] SubTask 11.1: 设计 patches/definitions.json Schema（参考 trae-unlock v2.0 格式）
-  - [ ] SubTask 11.2: 开发 apply-patches.ps1（Anchor 匹配+备份+语法检查）
-  - [ ] SubTask 11.3: 开发 rollback.ps1（一键回滚到任意备份）
-  - [ ] SubTask 11.4: 开发 auto-heal.ps1（自动诊断+修复）
-  - [ ] SubTask 11.5: 开发 verify.ps1（验证补丁健康状态）
-  - [ ] SubTask 11.6: 迁移 Phase 1 的所有补丁到 definitions.json
+- [x] Task 11: 构建补丁管理系统 (I1) ✅
+  - [x] SubTask 11.1: 设计 patches/definitions.json Schema → **v2.0格式，6个补丁定义**
+  - [x] SubTask 11.2: 开发 apply-patches.ps1 → **JSON Path导航+备份+幂等+DryRun**
+  - [x] SubTask 11.3: 开发 rollback.ps1 → **交互选择/快速恢复/安全保护**
+  - [x] SubTask 11.4: ~~auto-heal.ps1~~ → **整合到 apply-patches.ps1**
+  - [x] SubTask 11.5: 开发 verify-patches.ps1 → **四级状态+健康度评分+JSON输出**
+  - [x] SubTask 11.6: 迁移 Phase 1 补丁 → **6个P4+P5补丁已定义，验证100%通过**
 
-- [ ] Task 12: 构建进程管理工具 (I2)
-  - [ ] SubTask 12.1: 开发 launcher.ts（启动 SOLO + CDP 配置）
-  - [ ] SubTask 12.2: 开发 killer.ts（终止进程及子进程树）
-  - [ ] SubTask 12.3: 开发 monitor.ts（进程状态监控）
-  - [ ] SubTask 12.4: 开发 watcher.ts（product.json 变更监听+热重载提示）
-  - [ ] SubTask 12.5: 注册 CLI 命令：solo start/stop/restart/status
+  **📦 已创建的文件**:
+  - `patches/definitions.json` — 6个补丁定义 (P4+P5)
+  - `scripts/apply-patches.ps1` — 补丁应用 (JSON Path+备份+验证)
+  - `scripts/rollback.ps1` — 一键回滚 (交互/快速/安全)
+  - `scripts/verify-patches.ps1` — 健康验证 (四级状态+评分)
+
+- [x] Task 12: 构建进程管理工具 (I2) ✅
+  - [x] SubTask 12.1: 开发 launcher.ts → **自动kill+CDP配置+就绪等待**
+  - [x] SubTask 12.2: 开发 killer.ts → **进程树终止+僵死处理+三级清理**
+  - [x] SubTask 12.3: 开发 monitor.ts → **健康检查+内存/CPU+CDP连通性**
+  - [x] SubTask 12.4: 开发 watcher.ts → **SHA256哈希+变更历史+热重载**
+  - [x] SubTask 12.5: 注册 CLI 命令 → **solo start/stop/restart/status/watch**
+
+  **📦 增强的文件 (toolkit/src/process/)**:
+  - `launcher.ts` — 启动器 (CDP端口/就绪等待/LaunchResult)
+  - `killer.ts` — 终止器 (进程树/僵死处理/KillResult)
+  - `monitor.ts` — 监控器 (健康报告/内存CPU/HealthReport)
+  - `watcher.ts` — 监听器 (SHA256/变更历史/热重载)
+  - `constants.ts` — 新增进程管理常量
 
 - [ ] Task 13: 构建 API Gateway 代理网关 (I3)
   - [ ] SubTask 13.1: 初始化 gateway/ 项目结构（Go 或 Node.js）

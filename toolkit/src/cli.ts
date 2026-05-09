@@ -44,28 +44,124 @@ program
       .action(() => { showDiff(); })
   );
 
+// ==================== 进程管理命令 ====================
 program
   .command('solo')
   .description('进程管理')
   .addCommand(
     new Command('start')
       .description('启动 SOLO')
-      .action(() => { startSolo(); })
+      .option('-p, --cdp-port <port>', 'CDP 调试端口', String(DEFAULT_CDP_PORT))
+      .option('--no-kill', '不自动终止已有 SOLO 进程')
+      .option('--timeout <ms>', '启动超时（毫秒）', '60000')
+      .option('--extra-args <args...>', '额外启动参数')
+      .action(async (options: { cdpPort: string; noKill: boolean; timeout: string; extraArgs?: string[] }) => {
+        const result = await startSolo({
+          cdpPort: parseInt(options.cdpPort, 10),
+          noKill: options.noKill,
+          timeout: parseInt(options.timeout, 10),
+          extraArgs: options.extraArgs,
+        });
+        if (result.ready) {
+          console.log(`\n  SOLO 启动成功`);
+          console.log(`  PID: ${result.pid}`);
+          console.log(`  CDP 端口: ${result.cdpPort}`);
+          console.log(`  CDP 端点: ${result.cdpEndpoint}`);
+          if (result.browserVersion) console.log(`  浏览器版本: ${result.browserVersion}`);
+          if (result.wsUrl) console.log(`  WebSocket: ${result.wsUrl}`);
+          console.log('');
+        } else {
+          console.error(`\n  SOLO 启动超时，CDP 端口未就绪`);
+          console.error(`  PID: ${result.pid}`);
+          console.error(`  请检查应用是否正常启动\n`);
+          process.exit(1);
+        }
+      })
   )
   .addCommand(
     new Command('stop')
       .description('停止 SOLO')
-      .action(() => { stopSolo(); })
+      .option('-f, --force', '强制终止（/F 参数）', true)
+      .option('--no-force', '优雅终止（不使用 /F）')
+      .option('--timeout <ms>', '等待超时（毫秒）', '15000')
+      .action(async (options: { force: boolean; timeout: string }) => {
+        const result = await killSolo(options.force, {
+          timeout: parseInt(options.timeout, 10),
+        });
+        console.log(`\n  终止结果:`);
+        console.log(`  成功: ${result.killed.length} 个进程`);
+        if (result.failed.length > 0) {
+          console.log(`  失败: ${result.failed.join(', ')}`);
+        }
+        if (result.timedOut) {
+          console.log(`  警告: 部分进程未在超时内退出`);
+        }
+        console.log('');
+      })
   )
   .addCommand(
     new Command('restart')
       .description('重启 SOLO')
-      .action(async () => { await stopSolo(); await startSolo(); })
+      .option('-p, --cdp-port <port>', 'CDP 调试端口', String(DEFAULT_CDP_PORT))
+      .option('--timeout <ms>', '启动超时（毫秒）', '60000')
+      .action(async (options: { cdpPort: string; timeout: string }) => {
+        console.log('正在重启 SOLO...');
+        const killResult = await killSolo(true);
+        if (killResult.failed.length > 0) {
+          console.warn(`  警告: 部分进程终止失败: ${killResult.failed.join(', ')}`);
+        }
+        const startResult = await startSolo({
+          cdpPort: parseInt(options.cdpPort, 10),
+          timeout: parseInt(options.timeout, 10),
+        });
+        if (startResult.ready) {
+          console.log(`\n  SOLO 重启成功 (PID: ${startResult.pid})\n`);
+        } else {
+          console.error(`\n  SOLO 重启后 CDP 未就绪\n`);
+          process.exit(1);
+        }
+      })
   )
   .addCommand(
     new Command('status')
       .description('查看进程状态')
-      .action(() => { getStatus(); })
+      .option('-p, --cdp-port <port>', 'CDP 端口', String(DEFAULT_CDP_PORT))
+      .option('--json', '以 JSON 格式输出')
+      .action(async (options: { cdpPort: string; json: boolean }) => {
+        if (options.json) {
+          const report = await healthCheck(parseInt(options.cdpPort, 10));
+          console.log(JSON.stringify(report, null, 2));
+        } else {
+          await getStatus();
+        }
+      })
+  )
+  .addCommand(
+    new Command('watch')
+      .description('监听配置变更')
+      .option('--auto-reload', '检测到变更后自动重载 SOLO')
+      .option('--history', '查看变更历史')
+      .option('--clear-history', '清空变更历史')
+      .option('-n, --limit <count>', '历史记录条数', '10')
+      .action(async (options: { autoReload: boolean; history: boolean; clearHistory: boolean; limit: string }) => {
+        if (options.clearHistory) {
+          clearHistory();
+          console.log('变更历史已清空');
+          return;
+        }
+        if (options.history) {
+          printHistory(parseInt(options.limit, 10));
+          return;
+        }
+        // 启动监听
+        startWatcher({ autoReload: options.autoReload });
+        // 保持进程运行
+        process.on('SIGINT', () => {
+          stopWatcher();
+          console.log('\n监听器已停止');
+          process.exit(0);
+        });
+      })
   );
 
 program

@@ -1,0 +1,82 @@
+{
+  "name": "supabase-connector",
+  "displayName": "Supabase Connector MCP",
+  "publisher": "trae-solo-unlock",
+  "description": "Supabase database integration MCP tool for TRAE SOLO CN - query, table management, auth, and storage",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": ["*"],
+  "enabledApiProposals": ["trae"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "supabase.listProjects",
+        "title": "Supabase: List Projects",
+        "enablement": "false"
+      },
+      {
+        "command": "supabase.query",
+        "title": "Supabase: Execute Query",
+        "enablement": "false"
+      },
+      {
+        "command": "supabase.listTables",
+        "title": "Supabase: List Tables",
+        "enablement": "false"
+      },
+      {
+        "command": "supabase.checkConfig",
+        "title": "Supabase: Check Configuration",
+        "enablement": "false"
+      }
+    ],
+    "configuration": {
+      "title": "Supabase Connector",
+      "properties": {
+        "supabase.accessToken": {
+          "type": "string",
+          "default": "",
+          "description": "Supabase access token for Management API. Get from https://supabase.com/dashboard/account/tokens"
+        },
+        "supabase.projectUrl": {
+          "type": "string",
+          "default": "",
+          "description": "Supabase project URL (e.g., https://xxxxx.supabase.co)"
+        },
+        "supabase.serviceRoleKey": {
+          "type": "string",
+          "default": "",
+          "description": "Supabase service role key for admin access. WARNING: Use with caution."
+        },
+        "supabase.anonKey": {
+          "type": "string",
+          "default": "",
+          "description": "Supabase anonymous key for public access."
+        },
+        "supabase.defaultLimit": {
+          "type": "number",
+          "default": 100,
+          "description": "Default row limit for query results."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.82.0",
+    "typescript": "^5.8.0"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.14.0"
+  }
+}
