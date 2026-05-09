@@ -11,12 +11,23 @@
 - [x] 定位沙箱配置和命令黑名单逻辑 → **✅ commandDenyList/sandboxRWList**
 - [x] 所有关键位置已持久化到 Memory MCP → **4个实体+5条关系**
 
-### Task 2-4: JS层补丁系统 (⚠️ 需重新评估)
-- [ ] ~~数据源层补丁~~ → **SOLO无DG.parse, 需寻找替代方案**
-- [ ] ~~服务层补丁~~ → **SOLO无PlanItemStreamParser, AI逻辑在ai-agent.exe**
-- [ ] ~~UI层补丁~~ → **需确认workbench中是否有类似组件**
-- [ ] ~~补丁定义~~ → **待Task 11补丁管理系统搭建后重试**
-- [ ] **建议**: 先完成Task 8(原生模块)或Task 10(数据分析)获取更多信息
+### Task 2: 命令自动确认系统 (P1) ✅
+- [x] 通过 VSCode 设置系统实现 → **chat.tools.terminal.autoApprove 配置**
+- [x] 补丁定义已写入 definitions.json → **p1-auto-approve-commands**
+- [x] apply-settings.ps1 已开发 → **深合并+备份+验证**
+- [x] verify-patches 报告 100% APPLIED
+- [x] 关键配置: `/.*/ : true` 全命令自动批准 + ignoreDefaultAutoApproveRules
+
+### Task 3: 思考上限自动续接 (P2) — ⚠️ 探索性结论
+- [x] 确认 SOLO 无 JS 层续接逻辑 → **逻辑在 ai-agent.exe (Rust)**
+- [x] 替代方案: agent-browser 自动化续接 → **chat-automation.ts 已预留**
+- [x] 无法通过配置修改实现 → **需要逆向 ai-agent.exe 或 UI 自动化**
+
+### Task 4: 循环检测智能绕过 (P3) — ⚠️ 探索性结论
+- [x] 确认 SOLO 无 JS 层循环检测逻辑 → **逻辑在 ai-agent.exe (Rust)**
+- [x] 替代方案1: agent-browser 自动化恢复 → **监测错误提示+自动重试**
+- [x] 替代方案2: product.json 配置 → **已扩展限额减少触发概率**
+- [x] 替代方案3: Socket 协议分析 → **未来方向 (端口 40005)**
 
 ### Task 5: 权限限制解除 (P4) ✅
 - [x] product.json 功能开关已修改 → computerUse/worktree/privacyMode (3项)
