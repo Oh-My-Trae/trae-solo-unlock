@@ -1,0 +1,348 @@
+import { Command } from 'commander';
+import { startSolo } from './process/launcher.js';
+import { stopSolo } from './process/killer.js';
+import { getStatus } from './process/monitor.js';
+import { showConfig } from './config/reader.js';
+import { getPreset } from './config/presets.js';
+import { applyChanges } from './config/writer.js';
+import { rollback } from './config/rollback.js';
+import { showDiff } from './config/diff.js';
+// Agent-Browser 集成
+import { platform } from './agent-browser/index.js';
+
+const program = new Command();
+
+program
+  .name('solo-toolkit')
+  .description('TRAE SOLO CN Dev Toolkit')
+  .version('0.2.0');
+
+program
+  .command('config')
+  .description('配置管理')
+  .addCommand(
+    new Command('show')
+      .description('显示当前配置')
+      .action(() => { showConfig(); })
+  )
+  .addCommand(
+    new Command('apply')
+      .description('应用配置预设')
+      .argument('<preset>', '预设名称: aggressive | conservative')
+      .action((preset: string) => { const p = getPreset(preset); if (p) applyChanges(p.changes); })
+  )
+  .addCommand(
+    new Command('rollback')
+      .description('回滚到上次备份')
+      .action(() => { rollback(); })
+  )
+  .addCommand(
+    new Command('diff')
+      .description('查看配置差异')
+      .action(() => { showDiff(); })
+  );
+
+program
+  .command('solo')
+  .description('进程管理')
+  .addCommand(
+    new Command('start')
+      .description('启动 SOLO')
+      .action(() => { startSolo(); })
+  )
+  .addCommand(
+    new Command('stop')
+      .description('停止 SOLO')
+      .action(() => { stopSolo(); })
+  )
+  .addCommand(
+    new Command('restart')
+      .description('重启 SOLO')
+      .action(async () => { await stopSolo(); await startSolo(); })
+  )
+  .addCommand(
+    new Command('status')
+      .description('查看进程状态')
+      .action(() => { getStatus(); })
+  );
+
+program
+  .command('apply')
+  .description('一键魔改：备份→修改→重启→验证')
+  .argument('<preset>', '预设名称: aggressive | conservative')
+  .option('--rollback', '验证失败时自动回滚', true)
+  .action(async (preset: string, options: { rollback: boolean }) => {
+    const { applyPreset } = await import('./commands/apply.js');
+    await applyPreset({ preset, rollbackOnFail: options.rollback });
+  });
+
+program
+  .command('test')
+  .description('自动化测试')
+  .addCommand(
+    new Command('smoke')
+      .description('冒烟测试')
+      .action(() => { console.log('Test smoke - TODO'); })
+  )
+  .addCommand(
+    new Command('screenshot')
+      .description('截图')
+      .action(() => { console.log('Test screenshot - TODO'); })
+  );
+
+program
+  .command('gateway')
+  .description('API 网关')
+  .addCommand(
+    new Command('start')
+      .description('启动网关')
+      .action(() => { console.log('Gateway start - TODO'); })
+  )
+  .addCommand(
+    new Command('stop')
+      .description('停止网关')
+      .action(() => { console.log('Gateway stop - TODO'); })
+  );
+
+// ==================== Agent-Browser 集成命令 ====================
+program
+  .command('browser')
+  .description('Agent-Browser 深度集成平台 (UI 自动化/测试/监控)')
+  .addCommand(
+    new Command('start')
+      .description('快速启动: 启动 SOLO + 建立 CDP 连接')
+      .action(async () => {
+        await platform.quickStart();
+      })
+  )
+  .addCommand(
+    new Command('stop')
+      .description('完整停止: 断开连接 + 停止进程')
+      .action(async () => {
+        await platform.quickStop();
+      })
+  )
+  .addCommand(
+    new Command('connect')
+      .description('建立 CDP 连接')
+      .action(async () => {
+        const result = await platform.connector.connect();
+        if (result.success) {
+          console.log(`✅ 连接成功: ${result.data?.wsUrl}`);
+        } else {
+          console.error(`❌ 连接失败: ${result.error}`);
+        }
+      })
+  )
+  .addCommand(
+    new Command('disconnect')
+      .description('断开 CDP 连接')
+      .action(async () => {
+        const result = await platform.connector.disconnect();
+        if (result.success) {
+          console.log('✅ 已断开连接');
+        } else {
+          console.error(`❌ 断开失败: ${result.error}`);
+        }
+      })
+  )
+  .addCommand(
+    new Command('status')
+      .description('查看平台状态')
+      .action(async () => {
+        const connectionStatus = platform.connector.getStatus();
+        const processInfo = platform.process.getInfo();
+        const health = await platform.process.healthCheck();
+
+        console.log('\n📊 Agent-Browser 平台状态');
+        console.log('=' .repeat(40));
+        console.log(`连接状态: ${connectionStatus.status}`);
+        console.log(`进程状态: ${processInfo.running ? '运行中' : '已停止'}`);
+        if (processInfo.pid) console.log(`进程 PID: ${processInfo.pid}`);
+        console.log(`CDP 端口: ${processInfo.cdpPort}`);
+        console.log(`健康检查: ${health.overall ? '✅ 正常' : '❌ 异常'}`);
+        console.log('');
+      })
+  )
+  // 操作命令
+  .addCommand(
+    new Command('snapshot')
+      .description('获取页面快照 (OBSERVE-UNDERSTAND-ACT)')
+      .action(async () => {
+        const result = await platform.actions.takeSnapshot();
+        if (result.success && result.data) {
+          console.log('\n📸 页面快照:');
+          console.log('-' .repeat(50));
+          console.log(`元素数量: ${result.data.elements.length}`);
+          console.log(`原始文本:\n${result.data.rawText.substring(0, 500)}...`);
+          console.log('-' .repeat(50) + '\n');
+        } else {
+          console.error(`❌ 获取快照失败: ${result.error}`);
+        }
+      })
+  )
+  .addCommand(
+    new Command('screenshot')
+      .description('截图保存')
+      .argument('[filename]', '文件名', `screenshot-${Date.now()}.png`)
+      .action(async (filename: string) => {
+        const result = await platform.actions.screenshot(filename);
+        if (result.success) {
+          console.log(`✅ 截图已保存: ${result.data}`);
+        } else {
+          console.error(`❌ 截图失败: ${result.error}`);
+        }
+      })
+  )
+  .addCommand(
+    new Command('click')
+      .description('点击元素')
+      .argument('<ref>', '元素引用 (如 @e5 或 e5)')
+      .action(async (ref: string) => {
+        const result = await platform.actions.click(ref);
+        if (result.success) {
+          console.log(`✅ 已点击: ${ref}`);
+        } else {
+          console.error(`❌ 点击失败: ${result.error}`);
+        }
+      })
+  )
+  .addCommand(
+    new Command('type')
+      .description('输入文本')
+      .argument('<text>', '要输入的文本')
+      .action(async (text: string) => {
+        const result = await platform.actions.type(text);
+        if (result.success) {
+          console.log(`✅ 已输入: ${text}`);
+        } else {
+          console.error(`❌ 输入失败: ${result.error}`);
+        }
+      })
+  )
+  // 工作区管理
+  .addCommand(
+    new Command('workspace')
+      .description('工作区管理')
+    .addCommand(
+      new Command('list')
+        .description('列出所有工作区')
+        .action(async () => {
+          const result = await platform.workspace.listWorkspaces();
+          if (result.success && result.data) {
+            console.log('\n📁 工作区列表:');
+            result.data.forEach((w: { name: string; isActive: boolean }) => {
+              console.log(`${w.isActive ? '▶' : ' '} ${w.name}${w.isActive ? ' (当前)' : ''}`);
+            });
+            console.log('');
+          } else {
+            console.error(`❌ 列出工作区失败: ${result.error}`);
+          }
+        })
+    )
+    .addCommand(
+      new Command('switch')
+        .description('切换工作区')
+        .argument('<name>', '工作区名称')
+        .action(async (name: string) => {
+          const result = await platform.workspace.switchWorkspace(name);
+          if (result.success) {
+            console.log(`✅ 已切换到工作区: ${name}`);
+          } else {
+            console.error(`❌ 切换失败: ${result.error}`);
+          }
+        })
+    )
+  )
+  // AI 对话
+  .addCommand(
+    new Command('chat')
+      .description('AI 对话自动化')
+    .addCommand(
+      new Command('send')
+        .description('发送 Prompt 到 AI')
+        .argument('<prompt>', '提示文本')
+        .option('-w, --workspace <name>', '指定工作区')
+        .option('-t, --timeout <ms>', '响应超时时间', '120000')
+        .action(async (prompt: string, options: { workspace?: string; timeout: string }) => {
+          const result = await platform.chat.chat(prompt, options.workspace, parseInt(options.timeout));
+          if (result.success && result.data) {
+            console.log('\n💬 AI 响应:');
+            console.log('-' .repeat(50));
+            console.log(result.data.content);
+            console.log('-' .repeat(50));
+            console.log(`⏱️  响应时间: ${(result.data.duration / 1000).toFixed(2)}s`);
+            console.log(`📝 内容长度: ${result.data.content.length} 字符\n`);
+          } else {
+            console.error(`❌ 对话失败: ${result.error}`);
+          }
+        })
+    )
+    .addCommand(
+      new Command('batch')
+        .description('批量测试多个 Prompt')
+        .argument('<prompts...>', '多个提示文本（空格分隔）')
+        .action(async (prompts: string[]) => {
+          const result = await platform.chat.batchTest(prompts);
+          if (result.success && result.data) {
+            console.log('\n📊 批量测试结果:');
+            const successCount = result.data.filter(r => r.success).length;
+            console.log(`总计: ${prompts.length}, 成功: ${successCount}, 失败: ${prompts.length - successCount}\n`);
+
+            result.data.forEach((r: { success: boolean; prompt: string; error?: string }, i: number) => {
+              console.log(`${i + 1}. [${r.success ? 'PASS' : 'FAIL'}] ${r.prompt.substring(0, 50)}...`);
+              if (!r.success && r.error) {
+                console.log(`   错误: ${r.error}`);
+              }
+            });
+          } else {
+            console.error(`❌ 批量测试失败: ${result.error}`);
+          }
+        })
+    )
+  )
+  // 回归测试
+  .addCommand(
+    new Command('regression')
+      .description('回归测试')
+    .addCommand(
+      new Command('baseline')
+        .description('采集基准截图')
+        .argument('<name>', '基准名称')
+        .action(async (name: string) => {
+          const result = await platform.regression.takeBaselineScreenshot(name);
+          if (result.success) {
+            console.log(`✅ 基准截图已保存: ${result.data}`);
+          } else {
+            console.error(`❌ 采集基准失败: ${result.error}`);
+          }
+        })
+    )
+    .addCommand(
+      new Command('list-baselines')
+        .description('列出所有基准截图')
+        .action(() => {
+          const baselines = platform.regression.listBaselines();
+          if (baselines.length === 0) {
+            console.log('暂无基准截图');
+          } else {
+            console.log('\n📷 基准截图列表:');
+            baselines.forEach((b: { name: string; date: Date }) => {
+              console.log(`  - ${b.name} (${b.date.toLocaleString()})`);
+            });
+            console.log('');
+          }
+        })
+    )
+  )
+  // 冒烟测试
+  .addCommand(
+    new Command('smoke-test')
+      .description('执行冒烟测试')
+      .action(async () => {
+        const result = await platform.runSmokeTest();
+        process.exit(result.passed ? 0 : 1);
+      })
+  );
+
+program.parse();
