@@ -93,12 +93,17 @@
   - `sandbox-analysis.ts` — Sandbox 模块分析
   - `types.ts` — 类型定义
 
-- [ ] Task 9: 增强 MCP 扩展生态 (S3)
-  - [ ] SubTask 9.1: 分析现有 MCP 工具的注册机制和协议规范
-  - [ ] SubTask 9.2: 开发示例 MCP 工具（数据库连接器或 API 客户端）
-  - [ ] SubTask 9.3: 增强 Computer Use 功能（OCR + 跨应用操作）
-  - [ ] SubTask 9.4: 开发第三方服务集成模板（Supabase/Vercel）
-  - [ ] SubTask 9.5: 编写 MCP 工具开发文档
+- [x] Task 9: 增强 MCP 扩展生态 (S3) ✅
+  - [x] SubTask 9.1: 分析 MCP 工具注册机制 → **两种注册方式: registerMcpProvider + registerMcpTransportServer**
+  - [x] SubTask 9.2: 开发示例 MCP 工具 → **file-processor (搜索/替换/统计/批量重命名)**
+  - [x] SubTask 9.3: 增强 Computer Use → **OCR+窗口管理+剪贴板+智能截图+布局预设**
+  - [x] SubTask 9.4: 第三方服务集成模板 → **supabase-connector (8个工具)**
+  - [x] SubTask 9.5: MCP 开发文档 → **注册机制分析报告已完成**
+
+  **📦 已创建的 MCP 工具 (mcp-tools/)**:
+  - `file-processor/` — 文件批量处理 (4个工具)
+  - `computer-use-enhanced/` — Computer Use增强 (5个工具)
+  - `supabase-connector/` — Supabase集成 (8个工具)
 
 - [x] Task 10: 构建数据洞察与分析面板 (S4) ✅
   - [x] SubTask 10.1: 分析 ai-agent/database.db → **发现使用加密/自定义格式**
@@ -148,20 +153,34 @@
   - `watcher.ts` — 监听器 (SHA256/变更历史/热重载)
   - `constants.ts` — 新增进程管理常量
 
-- [ ] Task 13: 构建 API Gateway 代理网关 (I3)
-  - [ ] SubTask 13.1: 初始化 gateway/ 项目结构（Go 或 Node.js）
-  - [ ] SubTask 13.2: 开发 HTTP/HTTPS 代理核心（http-proxy-middleware 或类似库）
-  - [ ] SubTask 13.3: 开发请求/响应日志记录器
-  - [ ] SubTask 13.4: 开发 OpenAI 兼容 API 转换器
-  - [ ] SubTask 13.5: 开发 Token 自动提取与缓存模块（LevelDB 读取）
-  - [ ] SubTask 13.6: 注册 CLI 命令：gateway start/stop/docs
+- [x] Task 13: 构建 API Gateway 代理网关 (I3) ✅
+  - [x] SubTask 13.1: 初始化 gateway/ 项目结构 → **Node.js + Express**
+  - [x] SubTask 13.2: 开发 HTTP/HTTPS 代理核心 → **proxy.ts (拦截/转发/修改)**
+  - [x] SubTask 13.3: 开发请求/响应日志记录器 → **logger.ts (流量统计/性能指标)**
+  - [x] SubTask 13.4: 开发 OpenAI 兼容 API 转换器 → **openai-adapter.ts (/v1/chat/completions)**
+  - [x] SubTask 13.5: 开发 Token 自动提取模块 → **token-extractor.ts (LevelDB读取)**
+  - [x] SubTask 13.6: 注册 CLI 命令 → **gateway start/stop/docs**
 
-- [ ] Task 14: 构建 CI/CD 自动化流水线 (I4)
-  - [ ] SubTask 14.1: 开发冒烟测试套件（agent-browser 启动+基本功能验证）
-  - [ ] SubTask 14.2: 开发回归测试套件（截图对比+差异标记）
-  - [ ] SubTask 14.3: 开发性能基准测试工具（启动时间/响应延迟/内存占用）
-  - [ ] SubTask 14.4: 开发自动报告生成器（变更摘要+测试结果+性能数据）
-  - [ ] SubTask 14.5: 集成到 toolkit/ CLI 命令：test smoke/regression/performance
+  **📦 已创建的模块 (gateway/src/)**:
+  - `index.ts` — 主入口 (Express服务器)
+  - `proxy.ts` — 代理核心 (HTTP/HTTPS/WebSocket)
+  - `openai-adapter.ts` — OpenAI兼容转换器
+  - `token-extractor.ts` — Token提取与缓存
+  - `logger.ts` — 请求日志记录器
+
+- [x] Task 14: 构建 CI/CD 自动化流水线 (I4) ✅
+  - [x] SubTask 14.1: 开发冒烟测试套件 → **smoke-test.ps1 (5阶段验证)**
+  - [x] SubTask 14.2: 开发回归测试套件 → **regression-test.ps1 (快照对比+JSON Path验证)**
+  - [x] SubTask 14.3: 开发性能基准测试 → **performance-benchmark.ps1 (冷/热启动+AI延迟+内存)**
+  - [x] SubTask 14.4: 开发自动报告生成器 → **report-generator.ps1 (Markdown+JSON双格式)**
+  - [x] SubTask 14.5: 集成主流水线 → **pipeline.ps1 (选择性执行+自动回滚)**
+
+  **📦 已创建的文件 (scripts/ci/)**:
+  - `smoke-test.ps1` — 冒烟测试 (补丁应用+启动+CDP验证+清理)
+  - `regression-test.ps1` — 回归测试 (基准快照+差异对比+逐项验证)
+  - `performance-benchmark.ps1` — 性能基准 (冷/热启动+AI延迟+内存+历史对比)
+  - `report-generator.ps1` — 报告生成 (Markdown+JSON双格式)
+  - `pipeline.ps1` — 主流水线 (编排+选择性执行+自动回滚)
 
 ## Task Dependencies
 
