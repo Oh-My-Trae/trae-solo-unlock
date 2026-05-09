@@ -77,13 +77,21 @@
   - `regression-test.ts` — 回归测试 (截图对比/差异检测/报告生成)
   - `types.ts/config.ts/logger.ts` — 基础设施
 
-- [ ] Task 8: 深度定制原生模块 (S2)
-  - [ ] SubTask 8.1: 分析 AI Agent 模块的 API 端点配置格式
-  - [ ] SubTask 8.2: 开发自定义模型端点切换工具
-  - [ ] SubTask 8.3: 分析 CKG 模块的嵌入引擎和数据结构
-  - [ ] SubTask 8.4: 开发自定义知识库注入工具
-  - [ ] SubTask 8.5: 分析 Sandbox 模块的权限矩阵配置
-  - [ ] SubTask 8.6: 开发沙箱策略动态调整工具
+- [x] Task 8: 深度定制原生模块 (S2) ✅
+  - [x] SubTask 8.1: 分析 AI Agent 模块的 API 端点配置格式 → **model-switcher.ts 完整实现**
+  - [x] SubTask 8.2: 开发自定义模型端点切换工具 → **5个预设端点 + 代理服务器 + 备份恢复**
+  - [x] SubTask 8.3: 分析 CKG 模块的嵌入引擎和数据结构 → **ckg-analysis.ts + knowledge-base.ts**
+  - [x] SubTask 8.4: 开发自定义知识库注入工具 → **CRUD + 批量导入导出 + 搜索**
+  - [x] SubTask 8.5: 分析 Sandbox 模块的权限矩阵配置 → **sandbox-analysis.ts**
+  - [x] SubTask 8.6: 开发沙箱策略动态调整工具 → **sandbox-controller.ts + 预设配置**
+
+  **📦 已创建的模块 (toolkit/src/native-modules/)**:
+  - `model-switcher.ts` — 模型端点切换 (Trae/OpenAI/Ollama/LM Studio/Anthropic)
+  - `knowledge-base.ts` — 知识库管理 (注入/CRUD/导入导出/搜索)
+  - `sandbox-controller.ts` — 沙箱策略控制 (RW目录/黑名单/预设)
+  - `ckg-analysis.ts` — CKG 模块分析
+  - `sandbox-analysis.ts` — Sandbox 模块分析
+  - `types.ts` — 类型定义
 
 - [ ] Task 9: 增强 MCP 扩展生态 (S3)
   - [ ] SubTask 9.1: 分析现有 MCP 工具的注册机制和协议规范
@@ -92,13 +100,23 @@
   - [ ] SubTask 9.4: 开发第三方服务集成模板（Supabase/Vercel）
   - [ ] SubTask 9.5: 编写 MCP 工具开发文档
 
-- [ ] Task 10: 构建数据洞察与分析面板 (S4)
-  - [ ] SubTask 10.1: 分析 ai-agent/database.db 的表结构和数据格式
-  - [ ] SubTask 10.2: 分析 ckg_server 数据库的索引和嵌入数据
-  - [ ] SubTask 10.3: 开发对话历史分析工具（查询模式、成功率、响应时间）
-  - [ ] SubTask 10.4: 开发代码修改追踪工具（热点文件排行榜）
-  - [ ] SubTask 10.5: 开发 Token 消耗统计与优化建议工具
-  - [ ] SubTask 10.6: 构建可视化仪表板（CLI 或 Web）
+- [x] Task 10: 构建数据洞察与分析面板 (S4) ✅
+  - [x] SubTask 10.1: 分析 ai-agent/database.db → **发现使用加密/自定义格式**
+  - [x] SubTask 10.2: 分析 ckg_server 数据库 → **db/connector.ts 已实现**
+  - [x] SubTask 10.3: 开发对话历史分析工具 → **chat-analyzer.ts (模式/成功率/响应时间)**
+  - [x] SubTask 10.4: 开发代码修改追踪工具 → **file-tracker.ts (热点/时间线/类型分布)**
+  - [x] SubTask 10.5: 开发 Token 消耗统计工具 → **token-counter.ts (摘要/分组/成本/优化)**
+  - [x] SubTask 10.6: 构建可视化仪表板 → **AnalyticsEngine 统一入口 + ConsoleReporter**
+
+  **📦 已创建的模块 (toolkit/src/analytics/)**:
+  - `db/connector.ts` — 数据库连接管理 (sql.js + Workspace Storage)
+  - `db/queries.ts` — SQL 查询封装
+  - `analyzers/chat-analyzer.ts` — 对话历史分析器
+  - `analyzers/file-tracker.ts` — 代码修改追踪器
+  - `analyzers/token-counter.ts` — Token 统计器
+  - `reporters/console.ts` — 终端输出报告
+  - `reporters/json.ts` — JSON/CSV 导出
+  - `index.ts` — AnalyticsEngine 统一入口
 
 ## Phase 3: 自动化基础设施（构建开发工具链）
 

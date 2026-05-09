@@ -1,7 +1,8 @@
 import { Command } from 'commander';
-import { startSolo } from './process/launcher.js';
-import { stopSolo } from './process/killer.js';
-import { getStatus } from './process/monitor.js';
+import { startSolo, getCurrentCdpPort } from './process/launcher.js';
+import { killSolo, stopSolo } from './process/killer.js';
+import { getStatus, healthCheck } from './process/monitor.js';
+import { startWatcher, stopWatcher, getWatcherStatus, printHistory, clearHistory, getChangeHistory } from './process/watcher.js';
 import { showConfig } from './config/reader.js';
 import { getPreset } from './config/presets.js';
 import { applyChanges } from './config/writer.js';
@@ -9,6 +10,7 @@ import { rollback } from './config/rollback.js';
 import { showDiff } from './config/diff.js';
 // Agent-Browser 集成
 import { platform } from './agent-browser/index.js';
+import { DEFAULT_CDP_PORT } from './constants.js';
 
 const program = new Command();
 

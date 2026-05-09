@@ -1,0 +1,142 @@
+{
+  "$schema": "patches/definitions.schema.json",
+  "version": "2.0",
+  "target": "TRAE SOLO CN",
+  "targetVersion": "0.1.7",
+  "targetFile": "product.json",
+  "targetPath": "D:\\apps\\TRAE SOLO CN\\resources\\app\\product.json",
+  "patches": [
+    {
+      "id": "p4-computer-use-enable",
+      "name": "启用 Computer Use 功能",
+      "description": "将 iCubeApp.computerUse.enable 从 false 改为 true，启用计算机操控能力",
+      "targetFile": "product.json",
+      "targetPath": "D:\\apps\\TRAE SOLO CN\\resources\\app\\product.json",
+      "type": "json",
+      "enabled": true,
+      "operations": [
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.computerUse.enable",
+          "value": true,
+          "originalValue": false
+        }
+      ]
+    },
+    {
+      "id": "p4-worktree-enable",
+      "name": "启用 Worktree 功能",
+      "description": "将 iCubeApp.worktree.enable 从 false 改为 true，启用工作树多分支并行开发",
+      "targetFile": "product.json",
+      "targetPath": "D:\\apps\\TRAE SOLO CN\\resources\\app\\product.json",
+      "type": "json",
+      "enabled": true,
+      "operations": [
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.worktree.enable",
+          "value": true,
+          "originalValue": false
+        }
+      ]
+    },
+    {
+      "id": "p4-privacy-mode-disable",
+      "name": "关闭隐私模式",
+      "description": "将 iCubeApp.privacyMode.enable 从 true 改为 false，关闭隐私模式限制",
+      "targetFile": "product.json",
+      "targetPath": "D:\\apps\\TRAE SOLO CN\\resources\\app\\product.json",
+      "type": "json",
+      "enabled": true,
+      "operations": [
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.privacyMode.enable",
+          "value": false,
+          "originalValue": true
+        }
+      ]
+    },
+    {
+      "id": "p5-sandbox-denylist-trim",
+      "name": "精简沙箱命令黑名单",
+      "description": "将 autoRunConfig.commandDenyList 精简为仅保留最危险的3条命令，释放大量命令执行权限",
+      "targetFile": "product.json",
+      "targetPath": "D:\\apps\\TRAE SOLO CN\\resources\\app\\product.json",
+      "type": "json",
+      "enabled": true,
+      "operations": [
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.autoRunConfig.commandDenyList",
+          "value": ["rm -rf /", "dd if=", "mkfs.", ":(){ :|:& };:"],
+          "originalValue": null
+        }
+      ]
+    },
+    {
+      "id": "p4-mcp-limits-expand",
+      "name": "扩展 MCP 工具限制",
+      "description": "扩展 aiFeatures 中的 MCP 工具数量限制、Token 限制、自定义 Prompt 限制和聊天消息查询限制",
+      "targetFile": "product.json",
+      "targetPath": "D:\\apps\\TRAE SOLO CN\\resources\\app\\product.json",
+      "type": "json",
+      "enabled": true,
+      "operations": [
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.aiFeatures.mcpToolLimit",
+          "value": 100,
+          "originalValue": 40
+        },
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.aiFeatures.mcpTokenLimit",
+          "value": 16000,
+          "originalValue": 8000
+        },
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.aiFeatures.customPromptTokenLimit",
+          "value": 50000,
+          "originalValue": 20000
+        },
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.aiFeatures.chatMessageQueryLimit",
+          "value": 1000,
+          "originalValue": 500
+        }
+      ]
+    },
+    {
+      "id": "p4-feature-gates-enable",
+      "name": "启用 Feature Gates",
+      "description": "启用 featureGates 中的 HashDoc、Cueflow、TabCue 功能开关",
+      "targetFile": "product.json",
+      "targetPath": "D:\\apps\\TRAE SOLO CN\\resources\\app\\product.json",
+      "type": "json",
+      "enabled": true,
+      "operations": [
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.featureGates.enableHashDoc",
+          "value": true,
+          "originalValue": false
+        },
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.featureGates.enableCueflow",
+          "value": true,
+          "originalValue": false
+        },
+        {
+          "op": "replace",
+          "path": "$.iCubeApp.featureGates.enableTabCue",
+          "value": true,
+          "originalValue": false
+        }
+      ]
+    }
+  ]
+}
