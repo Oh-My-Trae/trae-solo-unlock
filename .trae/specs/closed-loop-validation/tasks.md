@@ -2,19 +2,16 @@
 
 ## Phase A: 闭环基础设施搭建
 
-- [ ] Task A1: 构建 SOLO 运行时控制器
-  - [ ] SubTask A1.1: 开发 `closed-loop/controller.ts` — 统一控制 SOLO 生命周期（启动/停止/重启）
-  - [ ] SubTask A1.2: 集成 process-manager + agent-browser connector → 一键启动+CDP连接
-  - [ ] SubTask A1.3: 实现连接保活机制（心跳检测+自动重连，指数退避）
-  - [ ] SubTask A1.4: 实现安全停止流程（保存状态→断开连接→终止进程→清理临时文件）
+- [x] Task A1: 构建 SOLO 运行时控制器 ✅
+  - [x] SubTask A1.1: 开发 `closed-loop/controller.ts` → **完整生命周期管理+事件系统**
+  - [x] SubTask A1.2: 集成 process-manager + agent-browser connector → **一键启动+CDP连接**
+  - [x] SubTask A1.3: 实现连接保活机制 → **心跳检测+指数退避重连(1s→60s)**
+  - [x] SubTask A1.4: 实现安全停止流程 → **状态保存→断开→终止→清理**
 
-- [ ] Task A2: 构建数据采集器
-  - [ ] SubTask A2.1: 开发 `closed-loop/collector.ts` — 性能快照采集器
-    - 进程信息 (PID/内存/CPU/线程数/句柄数)
-    - CDP 状态 (延迟/页面列表/WebSocket 状态)
-    - 系统资源 (磁盘IO/网络状态)
-  - [ ] SubTask A2.2: 开发截图采集模块 — 规范化命名 `{iteration}-{phase}-{testname}-{timestamp}.png`
-  - [ ] SubTask A2.3: 开发操作日志记录器 — JSON 格式，含完整上下文
+- [x] Task A2: 构建数据采集器 ✅
+  - [x] SubTask A2.1: 开发 `closed-loop/collector.ts` → **性能快照(进程/CDP/控制器)**
+  - [x] SubTask A2.2: 开发截图采集模块 → **命名规范 `{iter}-{phase}-{test}-{timestamp}.png`**
+  - [x] SubTask A2.3: 开发操作日志记录器 → **JSON格式+内存+文件双写**
 
 - [ ] Task A3: 构建分析决策引擎
   - [ ] SubTask A3.1: 开发 `closed-loop/analyzer.ts` — 性能基线对比分析
