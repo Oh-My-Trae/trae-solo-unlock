@@ -58,22 +58,58 @@ Write-Status "INFO" "Target: $TargetPath" "Gray"
 Write-Status "INFO" "Patches defined: $($Patches.Count)" "Gray"
 Write-Status "INFO" "Format version: $($def.version)" "Gray"
 
-# ── Check target file exists ──────────────────────────────────────────────────
-if (-not [System.IO.File]::Exists($TargetPath)) {
-    Write-Status "ERROR" "Target file not found: $TargetPath" "Red"
-    exit 2
+# ── Separate patches by type ──────────────────────────────────────────────────
+$JsonPatches = @($Patches | Where-Object { $_.type -ne "settings" })
+$SettingsPatches = @($Patches | Where-Object { $_.type -eq "settings" })
+
+Write-Status "INFO" "JSON patches: $($JsonPatches.Count), Settings patches: $($SettingsPatches.Count)" "Gray"
+
+# ── Delegate settings patches ─────────────────────────────────────────────────
+$settingsExitCode = 0
+if ($SettingsPatches.Count -gt 0) {
+    Write-Host ""
+    Write-Host "[solo-unlock] Delegating $($SettingsPatches.Count) settings patch(es)..." -ForegroundColor Cyan
+
+    $settingsScript = Join-Path $ScriptDir "apply-settings.ps1"
+    if (-not [System.IO.File]::Exists($settingsScript)) {
+        Write-Status "ERROR" "Settings script not found: $settingsScript" "Red"
+        $settingsExitCode = 1
+    } else {
+        try {
+            if ($DryRun) {
+                & $settingsScript -DryRun
+            } else {
+                & $settingsScript
+            }
+            $settingsExitCode = $LASTEXITCODE
+        } catch {
+            Write-Status "ERROR" "Failed to run settings script: $_" "Red"
+            $settingsExitCode = 1
+        }
+    }
 }
 
-# ── Filter patches by ID ──────────────────────────────────────────────────────
+# ── Filter JSON patches by ID ─────────────────────────────────────────────────
+$Patches = $JsonPatches
 if ($PatchId) {
     $FilterList = $PatchId.Split(",").Trim()
     $Patches = @($Patches | Where-Object { $FilterList -contains $_.id })
-    Write-Status "INFO" "Filtered to: $($Patches.Count) patch(es)" "Yellow"
+    Write-Status "INFO" "Filtered JSON patches to: $($Patches.Count) patch(es)" "Yellow"
 }
 
 if ($Patches.Count -eq 0) {
-    Write-Status "WARN" "No patches to apply" "Yellow"
+    Write-Status "WARN" "No JSON patches to apply" "Yellow"
+    # If settings patches were handled, exit with settings exit code
+    if ($SettingsPatches.Count -gt 0) {
+        exit $settingsExitCode
+    }
     exit 0
+}
+
+# ── Check JSON target file exists ──────────────────────────────────────────────
+if (-not [System.IO.File]::Exists($TargetPath)) {
+    Write-Status "ERROR" "Target file not found: $TargetPath" "Red"
+    exit 2
 }
 
 # ── JSON Path Navigator ───────────────────────────────────────────────────────
@@ -335,4 +371,4 @@ if ($appliedCount -gt 0 -and -not $DryRun -and $failedCount -eq 0) {
     Pop-Location
 }
 
-exit $(if ($failedCount -gt 0) { 1 } else { 0 })
+exit $(if ($failedCount -gt 0 -or $settingsExitCode -ne 0) { 1 } else { 0 })

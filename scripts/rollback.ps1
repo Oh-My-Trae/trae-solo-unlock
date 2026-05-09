@@ -23,7 +23,8 @@ param(
     [switch]$ListOnly,
     [switch]$Latest,
     [string]$BackupFile = "",
-    [string]$TargetPath = ""
+    [string]$TargetPath = "",
+    [string]$TargetType = "auto"
 )
 
 $ErrorActionPreference = "Stop"
@@ -45,6 +46,29 @@ if (-not $TargetPath) {
         $TargetPath = $def.targetPath
     } else {
         $TargetPath = "D:\apps\TRAE SOLO CN\resources\app\product.json"
+    }
+}
+
+# ── Resolve target type and settings path ─────────────────────────────────────
+$SettingsPath = ""
+if ([System.IO.File]::Exists($DefPath)) {
+    $def = [System.IO.File]::ReadAllText($DefPath) | ConvertFrom-Json
+    $settingsTargetProp = $def.PSObject.Properties["settingsTargetPath"]
+    if ($settingsTargetProp) { $SettingsPath = $settingsTargetProp.Value }
+    if (-not $SettingsPath) {
+        $SettingsPath = Join-Path $env:APPDATA "TRAE SOLO CN\User\settings.json"
+    }
+}
+
+# ── Determine target file based on type ───────────────────────────────────────
+if ($TargetType -eq "settings" -and $SettingsPath) {
+    $TargetPath = $SettingsPath
+    Write-Status "INFO" "Rollback target: settings.json" "Gray"
+} elseif ($TargetType -eq "auto" -and $BackupFile) {
+    # Auto-detect type from backup filename
+    if ($BackupFile -match "settings\.json") {
+        $TargetPath = $SettingsPath
+        Write-Status "INFO" "Auto-detected rollback target: settings.json" "Gray"
     }
 }
 

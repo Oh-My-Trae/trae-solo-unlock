@@ -50,11 +50,183 @@ if ($PatchId) {
     $Patches = @($Patches | Where-Object { $FilterList -contains $_.id })
 }
 
-# ── Check target file ─────────────────────────────────────────────────────────
-if (-not [System.IO.File]::Exists($TargetPath)) {
-    Write-Host "[ERROR] Target file not found: $TargetPath" -ForegroundColor Red
-    exit 2
+# ── Separate patches by type ──────────────────────────────────────────────────
+$JsonPatches = @($Patches | Where-Object { $_.type -ne "settings" })
+$SettingsPatches = @($Patches | Where-Object { $_.type -eq "settings" })
+
+# ── Settings Path Value Getter ────────────────────────────────────────────────
+function Get-SettingsPathValue {
+    param(
+        [PSCustomObject]$Root,
+        [string]$Path
+    )
+
+    $segments = $Path.Split(".")
+    $current = $Root
+
+    for ($i = 0; $i -lt $segments.Count; $i++) {
+        $seg = $segments[$i]
+        $prop = $current.PSObject.Properties[$seg]
+
+        if ($null -eq $prop) {
+            return @{ Value = $null; Found = $false }
+        }
+
+        if ($i -eq $segments.Count - 1) {
+            return @{ Value = $prop.Value; Found = $true }
+        }
+
+        $current = $prop.Value
+        if ($null -eq $current -or -not ($current -is [PSCustomObject])) {
+            return @{ Value = $null; Found = $false }
+        }
+    }
+
+    return @{ Value = $null; Found = $false }
 }
+
+# ── Compare Settings Values ───────────────────────────────────────────────────
+function Compare-SettingsValue {
+    param($Current, $Expected)
+
+    if ($null -eq $Current -and $null -eq $Expected) { return $true }
+    if ($null -eq $Current -or $null -eq $Expected) { return $false }
+
+    if ($Current -is [PSCustomObject] -and $Expected -is [PSCustomObject]) {
+        $curJson = $Current | ConvertTo-Json -Depth 50 -Compress
+        $expJson = $Expected | ConvertTo-Json -Depth 50 -Compress
+        return ($curJson -eq $expJson)
+    }
+
+    if ($Expected -is [array] -or $Current -is [array]) {
+        $expArr = @($Expected)
+        $curArr = @($Current)
+        if ($expArr.Count -ne $curArr.Count) { return $false }
+        for ($i = 0; $i -lt $expArr.Count; $i++) {
+            if ("$($expArr[$i])" -ne "$($curArr[$i])") { return $false }
+        }
+        return $true
+    }
+
+    return ("$Current" -eq "$Expected")
+}
+
+# ── Verify settings patches ───────────────────────────────────────────────────
+$settingsReport = @()
+$settingsApplied = 0
+$settingsPending = 0
+$settingsConflict = 0
+$settingsDisabled = 0
+$settingsPathNotFound = 0
+
+if ($SettingsPatches.Count -gt 0) {
+    # Resolve settings file path
+    $settingsTargetProp = $def.PSObject.Properties["settingsTargetPath"]
+    if ($settingsTargetProp) { $settingsPath = $settingsTargetProp.Value }
+    if (-not $settingsPath) {
+        $settingsPath = Join-Path $env:APPDATA "TRAE SOLO CN\User\settings.json"
+    }
+
+    $settingsObj = $null
+    if ([System.IO.File]::Exists($settingsPath)) {
+        $settingsRaw = [System.IO.File]::ReadAllText($settingsPath)
+        try {
+            $settingsObj = $settingsRaw | ConvertFrom-Json
+        } catch {
+            Write-Host "[ERROR] Failed to parse settings JSON: $_" -ForegroundColor Red
+        }
+    }
+
+    foreach ($patch in $SettingsPatches) {
+        if (-not $patch.enabled) {
+            $settingsReport += @{
+                Id     = $patch.id
+                Name   = $patch.name
+                Status = "disabled"
+                Detail = "Patch is disabled in definitions"
+                Ops    = @()
+            }
+            $settingsDisabled++
+            continue
+        }
+
+        if ($null -eq $settingsObj) {
+            $settingsReport += @{
+                Id     = $patch.id
+                Name   = $patch.name
+                Status = "path_not_found"
+                Detail = "Settings file not found or not parseable: $settingsPath"
+                Ops    = @()
+            }
+            $settingsPathNotFound++
+            continue
+        }
+
+        $operations = @($patch.operations)
+        $opsReport = @()
+        $patchStatus = "applied"
+        $hasPending = $false
+        $hasConflict = $false
+        $hasPathNotFound = $false
+
+        foreach ($op in $operations) {
+            $path = $op.path
+            $expectedValue = $op.value
+
+            $node = Get-SettingsPathValue -Root $settingsObj -Path $path
+
+            if (-not $node.Found) {
+                $opsReport += @{
+                    Path     = $path
+                    Status   = "pending"
+                    Current  = $null
+                    Expected = $expectedValue
+                }
+                $hasPending = $true
+                continue
+            }
+
+            $currentValue = $node.Value
+
+            if (Compare-SettingsValue -Current $currentValue -Expected $expectedValue) {
+                $opsReport += @{
+                    Path     = $path
+                    Status   = "applied"
+                    Current  = $currentValue
+                    Expected = $expectedValue
+                }
+            } else {
+                $opsReport += @{
+                    Path     = $path
+                    Status   = "conflict"
+                    Current  = $currentValue
+                    Expected = $expectedValue
+                }
+                $hasConflict = $true
+            }
+        }
+
+        if ($hasConflict) {
+            $patchStatus = "conflict"
+            $settingsConflict++
+        } elseif ($hasPending) {
+            $patchStatus = "pending"
+            $settingsPending++
+        } else {
+            $settingsApplied++
+        }
+
+        $settingsReport += @{
+            Id     = $patch.id
+            Name   = $patch.name
+            Status = $patchStatus
+            Ops    = $opsReport
+        }
+    }
+}
+
+# ── Check JSON target file ────────────────────────────────────────────────────
+$jsonTargetExists = [System.IO.File]::Exists($TargetPath)
 
 # ── JSON Path Navigator ───────────────────────────────────────────────────────
 function Get-JsonPathNode {
@@ -117,15 +289,19 @@ function Compare-PatchValue {
 }
 
 # ── Read and parse target JSON ────────────────────────────────────────────────
-$jsonRaw = [System.IO.File]::ReadAllText($TargetPath)
-try {
-    $jsonObj = $jsonRaw | ConvertFrom-Json
-} catch {
-    Write-Host "[ERROR] Failed to parse target JSON: $_" -ForegroundColor Red
-    exit 2
+$jsonObj = $null
+if ($jsonTargetExists) {
+    $jsonRaw = [System.IO.File]::ReadAllText($TargetPath)
+    try {
+        $jsonObj = $jsonRaw | ConvertFrom-Json
+    } catch {
+        Write-Host "[ERROR] Failed to parse target JSON: $_" -ForegroundColor Red
+    }
+} else {
+    Write-Host "[WARN] JSON target file not found: $TargetPath" -ForegroundColor Yellow
 }
 
-# ── Verify each patch ─────────────────────────────────────────────────────────
+# ── Verify JSON patches ───────────────────────────────────────────────────────
 $report = @()
 $appliedCount = 0
 $pendingCount = 0
@@ -133,7 +309,7 @@ $conflictCount = 0
 $disabledCount = 0
 $pathNotFoundCount = 0
 
-foreach ($patch in $Patches) {
+foreach ($patch in $JsonPatches) {
     if (-not $patch.enabled) {
         $report += @{
             Id       = $patch.id
@@ -143,6 +319,18 @@ foreach ($patch in $Patches) {
             Ops      = @()
         }
         $disabledCount++
+        continue
+    }
+
+    if ($null -eq $jsonObj) {
+        $report += @{
+            Id     = $patch.id
+            Name   = $patch.name
+            Status = "path_not_found"
+            Detail = "JSON target file not available"
+            Ops    = @()
+        }
+        $pathNotFoundCount++
         continue
     }
 
@@ -224,6 +412,15 @@ foreach ($patch in $Patches) {
 }
 
 # ── Output ────────────────────────────────────────────────────────────────────
+# Merge JSON and Settings reports
+$report += $settingsReport
+
+$totalApplied = $appliedCount + $settingsApplied
+$totalPending = $pendingCount + $settingsPending
+$totalConflict = $conflictCount + $settingsConflict
+$totalDisabled = $disabledCount + $settingsDisabled
+$totalPathNotFound = $pathNotFoundCount + $settingsPathNotFound
+
 if ($JsonOutput) {
     $report | ConvertTo-Json -Depth 5
     exit 0
@@ -233,7 +430,15 @@ if ($JsonOutput) {
 Write-Host ""
 Write-Host "[solo-unlock] Patch Verification Report" -ForegroundColor Cyan
 Write-Host "  Target: $TargetPath" -ForegroundColor Gray
-Write-Host "  Checked: $($Patches.Count) patch(es)" -ForegroundColor Gray
+if ($SettingsPatches.Count -gt 0) {
+    $settingsTargetProp2 = $def.PSObject.Properties["settingsTargetPath"]
+    if ($settingsTargetProp2) { $settingsPath = $settingsTargetProp2.Value }
+    if (-not $settingsPath) {
+        $settingsPath = Join-Path $env:APPDATA "TRAE SOLO CN\User\settings.json"
+    }
+    Write-Host "  Settings: $settingsPath" -ForegroundColor Gray
+}
+Write-Host "  Checked: $($Patches.Count) patch(es) (JSON: $($JsonPatches.Count), Settings: $($SettingsPatches.Count))" -ForegroundColor Gray
 Write-Host ""
 
 $statusIcons = @{
@@ -269,25 +474,25 @@ foreach ($entry in $report) {
 # ── Summary ───────────────────────────────────────────────────────────────────
 Write-Host ""
 Write-Host "=========================================" -ForegroundColor White
-Write-Host "  Applied:        $appliedCount" -ForegroundColor $(if ($appliedCount -gt 0) { "Green" } else { "Gray" })
-Write-Host "  Pending:        $pendingCount" -ForegroundColor $(if ($pendingCount -gt 0) { "Yellow" } else { "Gray" })
-Write-Host "  Conflict:       $conflictCount" -ForegroundColor $(if ($conflictCount -gt 0) { "Red" } else { "Gray" })
-Write-Host "  Path Not Found: $pathNotFoundCount" -ForegroundColor $(if ($pathNotFoundCount -gt 0) { "Red" } else { "Gray" })
-Write-Host "  Disabled:       $disabledCount" -ForegroundColor DarkGray
+Write-Host "  Applied:        $totalApplied" -ForegroundColor $(if ($totalApplied -gt 0) { "Green" } else { "Gray" })
+Write-Host "  Pending:        $totalPending" -ForegroundColor $(if ($totalPending -gt 0) { "Yellow" } else { "Gray" })
+Write-Host "  Conflict:       $totalConflict" -ForegroundColor $(if ($totalConflict -gt 0) { "Red" } else { "Gray" })
+Write-Host "  Path Not Found: $totalPathNotFound" -ForegroundColor $(if ($totalPathNotFound -gt 0) { "Red" } else { "Gray" })
+Write-Host "  Disabled:       $totalDisabled" -ForegroundColor DarkGray
 Write-Host "=========================================" -ForegroundColor White
 
-if ($pendingCount -gt 0) {
+if ($totalPending -gt 0) {
     Write-Host "  Run apply-patches.ps1 to apply pending patches." -ForegroundColor Yellow
 }
 
 # ── Overall health ────────────────────────────────────────────────────────────
-$totalActive = $appliedCount + $pendingCount + $conflictCount + $pathNotFoundCount
+$totalActive = $totalApplied + $totalPending + $totalConflict + $totalPathNotFound
 if ($totalActive -gt 0) {
-    $healthPct = [math]::Round(($appliedCount / $totalActive) * 100)
+    $healthPct = [math]::Round(($totalApplied / $totalActive) * 100)
 } else {
     $healthPct = 100
 }
 
 Write-Host "  Health: $healthPct%" -ForegroundColor $(if ($healthPct -ge 100) { "Green" } elseif ($healthPct -ge 50) { "Yellow" } else { "Red" })
 
-exit $(if ($conflictCount -gt 0 -or $pathNotFoundCount -gt 0) { 1 } else { 0 })
+exit $(if ($totalConflict -gt 0 -or $totalPathNotFound -gt 0) { 1 } else { 0 })

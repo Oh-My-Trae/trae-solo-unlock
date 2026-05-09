@@ -5,6 +5,7 @@
   "targetVersion": "0.1.7",
   "targetFile": "product.json",
   "targetPath": "D:\\apps\\TRAE SOLO CN\\resources\\app\\product.json",
+  "settingsTargetPath": "C:\\Users\\86150\\AppData\\Roaming\\TRAE SOLO CN\\User\\settings.json",
   "patches": [
     {
       "id": "p4-computer-use-enable",
@@ -135,6 +136,42 @@
           "path": "$.iCubeApp.featureGates.enableTabCue",
           "value": true,
           "originalValue": false
+        }
+      ]
+    },
+    {
+      "id": "p1-auto-approve-commands",
+      "name": "命令自动确认系统",
+      "description": "配置 chat.tools.terminal 自动确认规则，所有命令自动批准，忽略默认规则，不阻止文件写入，自动回复提示",
+      "targetFile": "settings.json",
+      "targetPath": "C:\\Users\\86150\\AppData\\Roaming\\TRAE SOLO CN\\User\\settings.json",
+      "type": "settings",
+      "enabled": true,
+      "operations": [
+        {
+          "op": "add",
+          "path": "chat.tools.terminal.enableAutoApprove",
+          "value": true
+        },
+        {
+          "op": "add",
+          "path": "chat.tools.terminal.autoApprove",
+          "value": { "/.*/": true }
+        },
+        {
+          "op": "add",
+          "path": "chat.tools.terminal.ignoreDefaultAutoApproveRules",
+          "value": true
+        },
+        {
+          "op": "add",
+          "path": "chat.tools.terminal.blockDetectedFileWrites",
+          "value": "never"
+        },
+        {
+          "op": "add",
+          "path": "chat.tools.terminal.autoReplyToPrompts",
+          "value": true
         }
       ]
     }
