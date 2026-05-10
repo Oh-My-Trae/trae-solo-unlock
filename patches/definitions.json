@@ -71,7 +71,19 @@
           "op": "replace",
           "path": "$.iCubeApp.autoRunConfig.commandDenyList",
           "value": ["rm -rf /", "dd if=", "mkfs.", ":(){ :|:& };:"],
-          "originalValue": null
+          "originalValue": [
+            "rm -rf /", "rm -rf /*", "rm -rf ~", "rm -rf ~/*",
+            "del /f /s /q C:\\", "del /f /s /q C:\\*",
+            "rmdir /s /q C:\\", "rd /s /q C:\\",
+            "dd if=", "mkfs.", "format ",
+            ":(){ :|:& };:",
+            "chmod -R 777 /", "chown -R ",
+            "> /dev/sda", "mv / ",
+            "shutdown", "reboot", "halt", "poweroff",
+            "init 0", "init 6",
+            "kill -9 1", "killall ", "pkill ",
+            "taskkill /f /im ", "net user ", "net localgroup administrators"
+          ]
         }
       ]
     },
