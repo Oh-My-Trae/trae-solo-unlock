@@ -1,10 +1,10 @@
 # Trae Solo Unlock
 
-> 🌐 [Oh My Trae](https://github.com/bigmanBass666/oh-my-trae) 生态导航
+> 🌐 [Oh My Trae](https://github.com/oh-my-trae/oh-my-trae) 生态导航
 >
 > | 🔓 解密 | 💾 记忆 | 🛠️ 解锁 | 🤖 Solo |
 > |---------|---------|----------|---------|
-> | [trae-db-decrypt](https://github.com/bigmanBass666/trae-db-decrypt) | [trae-to-claude-mem](https://github.com/bigmanBass666/trae-to-claude-mem) | [trae-unlock](https://github.com/bigmanBass666/trae-unlock) | **trae-solo-unlock** |
+> | [trae-db-decrypt](https://github.com/oh-my-trae/trae-db-decrypt) | [trae-to-claude-mem](https://github.com/oh-my-trae/trae-to-claude-mem) | [trae-unlock](https://github.com/oh-my-trae/trae-unlock) | **trae-solo-unlock** |
 
 > TRAE SOLO CN 魔改仓库 — Gateway 拦截、MCP Tools 扩展、源码研究工具链
 
