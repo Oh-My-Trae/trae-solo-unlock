@@ -71,7 +71,7 @@ export async function handleChatCompletion(
 ): Promise<void> {
   const token = getToken();
   if (!token) {
-    res.status(401).json({ error: { message: 'No SOLO token available. Set via POST /token or place JWT in ~/.trae-cn/trae-jwt-token', type: 'auth_error' } });
+    res.status(401).json({ error: { message: '没有可用的 SOLO Token。请通过 POST /token 设置，或将 JWT 放入 ~/.trae-cn/trae-jwt-token', type: 'auth_error' } });
     return;
   }
 
@@ -88,7 +88,7 @@ export async function handleChatCompletion(
     });
 
     if (createResp.code !== 0) {
-      res.status(502).json({ error: { message: `SOLO create session failed: ${createResp.message}`, type: 'upstream_error' } });
+      res.status(502).json({ error: { message: `SOLO 创建会话失败: ${createResp.message}`, type: 'upstream_error' } });
       return;
     }
 
@@ -101,7 +101,7 @@ export async function handleChatCompletion(
       await pollResponse(sessionId, requestId, model.name, token, res);
     }
   } catch (err: any) {
-    console.error('[proxy] chat error:', err.message);
+    console.error('[代理] 聊天请求出错:', err.message);
     if (!res.headersSent) {
       res.status(502).json({ error: { message: err.message, type: 'gateway_error' } });
     }
@@ -142,7 +142,7 @@ async function pollResponse(
         (m: any) => m.status === 'failed' || m.status === 'error'
       );
       if (errorMsg) {
-        res.status(502).json({ error: { message: 'SOLO response failed', type: 'upstream_error' } });
+        res.status(502).json({ error: { message: 'SOLO 响应失败', type: 'upstream_error' } });
         return;
       }
     }
@@ -150,7 +150,7 @@ async function pollResponse(
     await new Promise(r => setTimeout(r, interval));
   }
 
-  res.status(504).json({ error: { message: 'SOLO response timeout', type: 'timeout' } });
+  res.status(504).json({ error: { message: 'SOLO 响应超时', type: 'timeout' } });
 }
 
 // --- Streaming mode (poll-based with chunk delivery) ---
@@ -204,7 +204,7 @@ async function streamResponse(
         }
       }
     } catch (err: any) {
-      console.error('[stream] poll error:', err.message);
+      console.error('[流式] 轮询出错:', err.message);
     }
 
     await new Promise(r => setTimeout(r, pollInterval));
@@ -298,7 +298,7 @@ export async function fetchModels(token: string): Promise<any[]> {
       return models;
     }
   } catch (err: any) {
-    console.error('[models] fetch error:', err.message);
+    console.error('[模型] 获取模型列表出错:', err.message);
   }
   return [];
 }

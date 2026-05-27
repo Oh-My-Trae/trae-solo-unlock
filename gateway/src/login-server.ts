@@ -49,39 +49,38 @@ const LOGIN_PAGE = `<!DOCTYPE html>
 </head>
 <body>
   <div class="card">
-    <h1>SOLO Gateway Login</h1>
-    <p class="subtitle">Connect your SOLO account to the API gateway</p>
+    <h1>SOLO 网关登录</h1>
+    <p class="subtitle">将你的 SOLO 账号连接到 API 网关</p>
 
     <div class="step">
       <span class="step-num">1</span>
-      <span class="step-title">Open SOLO and login</span>
+      <span class="step-title">打开 SOLO 并登录</span>
       <div class="step-desc">
-        Open <a href="https://solo.trae.cn" target="_blank">solo.trae.cn</a> in another tab
-        and login with your account.
+        在新标签页打开 <a href="https://solo.trae.cn" target="_blank">solo.trae.cn</a>，登录你的账号。
       </div>
     </div>
 
     <div class="step">
       <span class="step-num">2</span>
-      <span class="step-title">Copy token via bookmarklet</span>
+      <span class="step-title">通过书签脚本一键提取 Token</span>
       <div class="step-desc">
-        Drag this link to your bookmarks bar, then click it on the SOLO page:
+        将下方链接拖到书签栏，然后在 SOLO 页面点击它：
         <br><br>
-        <a class="bookmarklet" href="javascript:void(function(){var t=document.cookie.split(';').find(c=>c.trim().startsWith('jwt_token=')||c.trim().startsWith('solo_token='));if(!t){var h=document.querySelector('[class*=token]');alert('Auto-detect failed. Use method below.')}else{fetch('http://localhost:${LOGIN_PORT}/api/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t.split('=')[1].trim()})}).then(r=>r.json()).then(d=>alert('Token sent! Gateway status: '+JSON.stringify(d))).catch(e=>alert('Error: '+e))}}())">
-          SOLO → Gateway
+        <a class="bookmarklet" href="javascript:void(function(){var t=document.cookie.split(';').find(c=>c.trim().startsWith('jwt_token=')||c.trim().startsWith('solo_token='));if(!t){var h=document.querySelector('[class*=token]');alert('自动检测失败，请使用下方手动方式。')}else{fetch('http://localhost:${LOGIN_PORT}/api/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:t.split('=')[1].trim()})}).then(r=>r.json()).then(d=>alert('Token 已发送！网关状态: '+JSON.stringify(d))).catch(e=>alert('错误: '+e))}}())">
+          SOLO → 网关
         </a>
       </div>
     </div>
 
     <div class="step">
       <span class="step-num">3</span>
-      <span class="step-title">Or paste JWT token manually</span>
+      <span class="step-title">或手动粘贴 JWT Token</span>
       <div class="step-desc">
-        Open DevTools (F12) → Network tab → find any <code>solo.trae.cn/api/remote/v1</code> request →
-        copy the <code>Cloud-IDE-JWT ...</code> value from Authorization header.
+        打开开发者工具 (F12) → Network 标签页 → 找到任意 <code>solo.trae.cn/api/remote/v1</code> 请求 →
+        复制 Authorization 请求头中 <code>Cloud-IDE-JWT ...</code> 的值。
       </div>
-      <textarea id="token" placeholder="Paste Cloud-IDE-JWT eyJhbGci... or just the eyJhbGci... part"></textarea>
-      <button id="submit" onclick="submitToken()">Connect</button>
+      <textarea id="token" placeholder="粘贴 Cloud-IDE-JWT eyJhbGci... 或只粘贴 eyJhbGci... 部分"></textarea>
+      <button id="submit" onclick="submitToken()">连接</button>
     </div>
 
     <div id="status" class="status"></div>
@@ -95,8 +94,7 @@ const LOGIN_PAGE = `<!DOCTYPE html>
       const token = raw.replace(/^Cloud-IDE-JWT\\s+/i, '').trim();
       const btn = document.getElementById('submit');
       const status = document.getElementById('status');
-      btn.disabled = true;
-      btn.textContent = 'Connecting...';
+      btn.textContent = '连接中...';
       try {
         const resp = await fetch('/api/token', {
           method: 'POST',
@@ -106,17 +104,17 @@ const LOGIN_PAGE = `<!DOCTYPE html>
         const data = await resp.json();
         if (data.ok) {
           status.className = 'status ok';
-          status.textContent = 'Connected! Gateway is ready. Close this page and use the API.';
+          status.textContent = '连接成功！网关已就绪，关闭此页面即可使用 API。';
         } else {
           status.className = 'status err';
-          status.textContent = 'Error: ' + JSON.stringify(data);
+          status.textContent = '错误: ' + JSON.stringify(data);
         }
       } catch (e) {
         status.className = 'status err';
-        status.textContent = 'Connection failed: ' + e.message;
+        status.textContent = '连接失败: ' + e.message;
       }
       btn.disabled = false;
-      btn.textContent = 'Connect';
+      btn.textContent = '连接';
     }
 
     // Auto-check status
@@ -124,7 +122,7 @@ const LOGIN_PAGE = `<!DOCTYPE html>
       if (d.hasToken) {
         const status = document.getElementById('status');
         status.className = 'status ok';
-        status.textContent = 'Already connected! Token expires in ' + d.expiresIn + 's';
+        status.textContent = '已连接！Token 将在 ' + d.expiresIn + ' 秒后过期。';
       }
     }).catch(() => {});
   </script>
@@ -154,11 +152,11 @@ export function startLoginServer(): Promise<void> {
               res.end(JSON.stringify({ ok: true, message: 'Token saved' }));
             } else {
               res.writeHead(400, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ error: 'token required' }));
+              res.end(JSON.stringify({ error: '请提供 token' }));
             }
           } catch {
             res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'invalid JSON' }));
+            res.end(JSON.stringify({ error: '无效的 JSON' }));
           }
         });
         return;
@@ -177,7 +175,7 @@ export function startLoginServer(): Promise<void> {
     });
 
     server.listen(LOGIN_PORT, () => {
-      console.log(`[login] Login page: http://localhost:${LOGIN_PORT}`);
+      console.log(`[登录页] 已启动: http://localhost:${LOGIN_PORT}`);
       resolve();
     });
   });

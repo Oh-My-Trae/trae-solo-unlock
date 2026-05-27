@@ -56,7 +56,7 @@ app.get('/token', (_req, res) => {
 
 app.post('/token', (req, res) => {
   const { token, ttl } = req.body;
-  if (!token) { res.status(400).json({ error: 'token required' }); return; }
+  if (!token) { res.status(400).json({ error: '请提供 token' }); return; }
   setToken(token, ttl || 7200000, 'manual');
   res.json({ ok: true, ...getTokenInfo() });
 });
@@ -65,7 +65,7 @@ app.post('/token', (req, res) => {
 app.use('/solo', async (req, res) => {
   const { getToken } = await import('./token-manager.js');
   const token = getToken();
-  if (!token) { res.status(401).json({ error: 'No token' }); return; }
+  if (!token) { res.status(401).json({ error: '无 Token' }); return; }
   const targetUrl = `https://solo.trae.cn/api/remote/v1${req.url}`;
   try {
     const resp = await fetch(targetUrl, {
@@ -98,15 +98,15 @@ async function main() {
 
   app.listen(GATEWAY_PORT, () => {
     const info = getTokenInfo();
-    console.log(`
-  SOLO API Gateway v2
+  console.log(`
+  SOLO API 网关 v2
   ========================
-  Address:   http://localhost:${GATEWAY_PORT}
-  Health:    http://localhost:${GATEWAY_PORT}/health
-  Models:    http://localhost:${GATEWAY_PORT}/v1/models
-  Login:     http://localhost:${GATEWAY_PORT + 1}/login  (get JWT token)
-  Set token: POST /token {"token": "<JWT>"}
-  Status:    ${info.hasToken ? `Token OK (expires in ${info.expiresIn}s)` : 'No token - visit login page'}
+  地址:      http://localhost:${GATEWAY_PORT}
+  健康检查:  http://localhost:${GATEWAY_PORT}/health
+  模型列表:  http://localhost:${GATEWAY_PORT}/v1/models
+  登录页:    http://localhost:${GATEWAY_PORT + 1}
+  设置Token: POST /token {"token": "<JWT>"}
+  状态:      ${info.hasToken ? `Token 有效 (${info.expiresIn}秒后过期)` : '无 Token - 请访问登录页'}
   ========================
   Claude Code / OpenAI:
     OPENAI_BASE_URL=http://localhost:${GATEWAY_PORT}/v1

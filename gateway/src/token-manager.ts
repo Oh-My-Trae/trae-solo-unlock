@@ -22,7 +22,7 @@ export function setToken(token: string, ttlMs: number = 7200000, source: string 
     expiresAt: Date.now() + ttlMs,
     source,
   };
-  console.log(`[token] cached (source: ${source}, ttl: ${Math.round(ttlMs / 1000)}s)`);
+  console.log(`[token] 已缓存 (来源: ${source}, 有效期: ${Math.round(ttlMs / 1000)}秒)`);
 }
 
 export function getToken(): string | null {
@@ -62,7 +62,7 @@ function loadTokenFromFile(): string | null {
             setToken(token, ttl, `file:${tokenPath}`);
             return token;
           } else {
-            console.warn(`[token] file token expired: ${tokenPath}`);
+            console.warn(`[token] 文件 Token 已过期: ${tokenPath}`);
           }
         }
       }
