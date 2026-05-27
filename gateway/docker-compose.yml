@@ -1,0 +1,12 @@
+services:
+  solo-gateway:
+    build: .
+    container_name: solo-gateway
+    restart: unless-stopped
+    ports:
+      - "18080:18080"
+      - "18081:18081"
+    volumes:
+      - ./config:/app/config
+    environment:
+      - SOLO_TOKEN=

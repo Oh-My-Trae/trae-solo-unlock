@@ -1,8 +1,9 @@
+import { GATEWAY_PORT } from './constants.js';
+import { setToken, hasToken, getTokenInfo } from './token-manager.js';
+import { handleChatCompletion, fetchModels } from './proxy.js';
+import { startLoginServer, stopLoginServer } from './login-server.js';
 import express from 'express';
 import cors from 'cors';
-import { GATEWAY_PORT } from './constants.js';
-import { setToken, getToken, hasToken, getTokenInfo, extractFromAuthHeader } from './token-manager.js';
-import { handleChatCompletion, fetchModels } from './proxy.js';
 
 const app = express();
 app.use(cors());
@@ -10,18 +11,15 @@ app.use(express.json({ limit: '10mb' }));
 
 // --- OpenAI-compatible endpoints ---
 
-// POST /v1/chat/completions
 app.post('/v1/chat/completions', async (req, res) => {
   const { model, messages, stream, ...rest } = req.body;
   const isStream = stream === true;
   await handleChatCompletion({ model, messages, stream: isStream, ...rest }, isStream, res);
 });
 
-// GET /v1/models
 app.get('/v1/models', async (_req, res) => {
-  const token = getToken();
+  const token = (await import('./token-manager.js')).getToken();
   if (!token) {
-    // Return static list when no token
     res.json({
       object: 'list',
       data: [
@@ -46,37 +44,28 @@ app.get('/v1/models', async (_req, res) => {
   res.json({ object: 'list', data: models });
 });
 
-// --- Gateway management endpoints ---
+// --- Gateway management ---
 
-// GET /health
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', gateway: 'solo-gateway', port: GATEWAY_PORT, hasToken: hasToken() });
 });
 
-// GET /token
 app.get('/token', (_req, res) => {
   res.json(getTokenInfo());
 });
 
-// POST /token — set token manually
 app.post('/token', (req, res) => {
   const { token, ttl } = req.body;
-  if (!token) {
-    res.status(400).json({ error: 'token required' });
-    return;
-  }
+  if (!token) { res.status(400).json({ error: 'token required' }); return; }
   setToken(token, ttl || 7200000, 'manual');
   res.json({ ok: true, ...getTokenInfo() });
 });
 
-// --- Proxy passthrough for raw SOLO API ---
-// Useful for direct API access with token
+// --- SOLO API passthrough ---
 app.use('/solo', async (req, res) => {
+  const { getToken } = await import('./token-manager.js');
   const token = getToken();
-  if (!token) {
-    res.status(401).json({ error: 'No token' });
-    return;
-  }
+  if (!token) { res.status(401).json({ error: 'No token' }); return; }
   const targetUrl = `https://solo.trae.cn/api/remote/v1${req.url}`;
   try {
     const resp = await fetch(targetUrl, {
@@ -91,10 +80,9 @@ app.use('/solo', async (req, res) => {
       },
       body: req.method !== 'GET' && req.method !== 'HEAD' ? JSON.stringify(req.body) : undefined,
     });
-    const contentType = resp.headers.get('content-type') || 'application/json';
-    res.setHeader('Content-Type', contentType);
-    const body = await resp.text();
-    res.status(resp.status).send(body);
+    const ct = resp.headers.get('content-type') || 'application/json';
+    res.setHeader('Content-Type', ct);
+    res.status(resp.status).send(await resp.text());
   } catch (err: any) {
     res.status(502).json({ error: err.message });
   }
@@ -102,19 +90,30 @@ app.use('/solo', async (req, res) => {
 
 // --- Start ---
 
-app.listen(GATEWAY_PORT, () => {
-  console.log(`
-  SOLO API Gateway
+async function main() {
+  // Start login server first if no token
+  if (!hasToken()) {
+    await startLoginServer();
+  }
+
+  app.listen(GATEWAY_PORT, () => {
+    const info = getTokenInfo();
+    console.log(`
+  SOLO API Gateway v2
   ========================
-  Address:  http://localhost:${GATEWAY_PORT}
-  Health:   http://localhost:${GATEWAY_PORT}/health
-  Models:   http://localhost:${GATEWAY_PORT}/v1/models
-  Token:    http://localhost:${GATEWAY_PORT}/token
-  Set token: POST http://localhost:${GATEWAY_PORT}/token  {"token": "<JWT>"}
+  Address:   http://localhost:${GATEWAY_PORT}
+  Health:    http://localhost:${GATEWAY_PORT}/health
+  Models:    http://localhost:${GATEWAY_PORT}/v1/models
+  Login:     http://localhost:${GATEWAY_PORT + 1}/login  (get JWT token)
+  Set token: POST /token {"token": "<JWT>"}
+  Status:    ${info.hasToken ? `Token OK (expires in ${info.expiresIn}s)` : 'No token - visit login page'}
   ========================
-  Claude Code usage:
-    ANTHROPIC_BASE_URL=http://localhost:${GATEWAY_PORT}/v1
+  Claude Code / OpenAI:
     OPENAI_BASE_URL=http://localhost:${GATEWAY_PORT}/v1
+    OPENAI_API_KEY=any
   ========================
-  `);
-});
+`);
+  });
+}
+
+main().catch(console.error);
