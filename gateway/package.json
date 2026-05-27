@@ -1,1 +1,21 @@
-{"name": "solo-api-gateway", "version": "0.1.0", "description": "SOLO API Gateway - 拦截/转发/暴露OpenAI兼容API", "type": "module", "scripts": {"build": "tsc", "start": "node dist/index.js", "dev": "tsc --watch"}, "dependencies": {"express": "^4.21.0", "http-proxy-middleware": "^3.0.0", "cors": "^2.8.5", "chalk": "^5.3.0", "commander": "^12.1.0"}, "devDependencies": {"typescript": "^5.6.0", "@types/node": "^22.0.0", "@types/express": "^5.0.0", "@types/cors": "^2.8.17"}}
+{
+  "name": "solo-gateway",
+  "version": "2.0.0",
+  "description": "SOLO API Gateway - OpenAI-compatible proxy for Trae SOLO models",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "node --watch dist/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0",
+    "@types/express": "^5.0.0",
+    "@types/cors": "^2.8.17"
+  }
+}
