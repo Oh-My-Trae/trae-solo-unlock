@@ -11,6 +11,13 @@ export interface OpenAIChatRequest {
 }
 
 export function resolveModel(requestedModel?: string): { name: string; display_name: string; multimodal: boolean } {
+  // If SOLO_DEFAULT_MODEL env is set, always use it (user's preferred model)
+  const override = process.env.SOLO_DEFAULT_MODEL;
+  if (override) {
+    const key = override.toLowerCase();
+    if (MODEL_MAP[key]) return MODEL_MAP[key];
+  }
+
   if (!requestedModel) return MODEL_MAP[DEFAULT_MODEL];
   // Strip context window suffix like [1M] that Claude Code appends
   const cleaned = requestedModel.replace(/\[.*?\]$/, '').trim();
