@@ -17,6 +17,40 @@ app.post('/v1/chat/completions', async (req, res) => {
   await handleChatCompletion({ model, messages, stream: isStream, ...rest }, isStream, res);
 });
 
+// Anthropic Messages API compatibility
+app.post('/v1/messages', async (req, res) => {
+  const { model, messages, max_tokens, stream, system } = req.body;
+  const openaiMessages: Array<{ role: string; content: string }> = [];
+  if (system) openaiMessages.push({ role: 'system', content: system });
+  for (const m of messages || []) {
+    const content = typeof m.content === 'string' ? m.content
+      : Array.isArray(m.content) ? m.content.filter((c: any) => c.type === 'text').map((c: any) => c.text).join('\n')
+      : '';
+    openaiMessages.push({ role: m.role, content });
+  }
+  const isStream = stream === true;
+  // Use a custom res that wraps OpenAI response into Anthropic format
+  const origJson = res.json.bind(res);
+  res.json = (body: any) => {
+    // Convert OpenAI response to Anthropic Messages format
+    if (body?.choices) {
+      const content = body.choices[0]?.message?.content || '';
+      return origJson({
+        id: body.id?.replace('chatcmpl-', 'msg_') || 'msg_' + Date.now(),
+        type: 'message',
+        role: 'assistant',
+        content: [{ type: 'text', text: content }],
+        model: body.model || model || 'unknown',
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 0, output_tokens: 0 },
+      });
+    }
+    // Error response
+    return origJson(body);
+  };
+  await handleChatCompletion({ model, messages: openaiMessages, stream: isStream }, isStream, res);
+});
+
 app.get('/v1/models', async (_req, res) => {
   const token = (await import('./token-manager.js')).getToken();
   if (!token) {
