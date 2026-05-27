@@ -21,8 +21,13 @@ export const SOLO_COMMON_PARAMS = {
   privacy_mode: 'on',
 };
 
-// Model name mapping: OpenAI-style names → SOLO internal names
+// Model name mapping: OpenAI/Anthropic-style names → SOLO internal names
 export const MODEL_MAP: Record<string, { name: string; display_name: string; multimodal: boolean }> = {
+  // Anthropic model name aliases (Claude Code uses these)
+  'claude-opus-4-6':           { name: 'DeepSeek-V4-Pro',       display_name: 'DeepSeek-V4-Pro (as Opus)',    multimodal: false },
+  'claude-sonnet-4-6':         { name: 'Doubao_1_6',            display_name: 'Doubao-Seed-Code (as Sonnet)',  multimodal: true },
+  'claude-haiku-4-5-20251001':  { name: 'DeepSeek-V4-Flash',    display_name: 'DeepSeek-V4-Flash (as Haiku)', multimodal: false },
+  // SOLO native model names
   'doubao-seed-code':       { name: 'Doubao_1_6',            display_name: 'Doubao-Seed-Code',     multimodal: true },
   'doubao-seed-2.0-code':   { name: 'Doubao-Seed-2.0-Code',  display_name: 'Doubao-Seed-2.0-Code', multimodal: true },
   'deepseek-v4-pro':        { name: 'DeepSeek-V4-Pro',       display_name: 'DeepSeek-V4-Pro',      multimodal: false },

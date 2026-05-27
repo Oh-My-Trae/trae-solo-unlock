@@ -12,7 +12,9 @@ export interface OpenAIChatRequest {
 
 export function resolveModel(requestedModel?: string): { name: string; display_name: string; multimodal: boolean } {
   if (!requestedModel) return MODEL_MAP[DEFAULT_MODEL];
-  const key = requestedModel.toLowerCase();
+  // Strip context window suffix like [1M] that Claude Code appends
+  const cleaned = requestedModel.replace(/\[.*?\]$/, '').trim();
+  const key = cleaned.toLowerCase();
   return MODEL_MAP[key] ?? MODEL_MAP[DEFAULT_MODEL];
 }
 

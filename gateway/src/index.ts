@@ -9,6 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+// Request logging
+app.use((req, _res, next) => {
+  console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
+  next();
+});
+
 // --- OpenAI-compatible endpoints ---
 
 app.post('/v1/chat/completions', async (req, res) => {
@@ -53,29 +59,22 @@ app.post('/v1/messages', async (req, res) => {
 
 app.get('/v1/models', async (_req, res) => {
   const token = (await import('./token-manager.js')).getToken();
+  // Always return Anthropic-compatible model names so Claude Code accepts them
+  const anthropicModels = [
+    { id: 'claude-opus-4-6', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'claude-opus-4-6[1M]', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'claude-sonnet-4-6', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'claude-sonnet-4-6[1M]', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'claude-haiku-4-5-20251001', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'claude-haiku-4-5-20251001[1M]', object: 'model', owned_by: 'solo-gateway' },
+  ];
   if (!token) {
-    res.json({
-      object: 'list',
-      data: [
-        { id: 'doubao-seed-code', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'doubao-seed-2.0-code', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'deepseek-v4-pro', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'deepseek-v4-flash', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'kimi-k2.6', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'kimi-k2.5', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'qwen-3.6-plus', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'qwen-3.5', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'glm-5.1', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'glm-5', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'glm-5v-turbo', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'minimax-m2.7', object: 'model', owned_by: 'solo-gateway' },
-        { id: 'minimax-m2.5', object: 'model', owned_by: 'solo-gateway' },
-      ],
-    });
+    res.json({ object: 'list', data: anthropicModels });
     return;
   }
-  const models = await fetchModels(token);
-  res.json({ object: 'list', data: models });
+  // Merge SOLO models with Anthropic aliases
+  const soloModels = await fetchModels(token);
+  res.json({ object: 'list', data: [...anthropicModels, ...soloModels] });
 });
 
 // --- Gateway management ---
