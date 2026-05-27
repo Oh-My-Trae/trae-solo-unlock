@@ -61,12 +61,27 @@ app.get('/v1/models', async (_req, res) => {
   const token = (await import('./token-manager.js')).getToken();
   // Always return Anthropic-compatible model names so Claude Code accepts them
   const anthropicModels = [
+    // Anthropic aliases
     { id: 'claude-opus-4-6', object: 'model', owned_by: 'solo-gateway' },
     { id: 'claude-opus-4-6[1M]', object: 'model', owned_by: 'solo-gateway' },
     { id: 'claude-sonnet-4-6', object: 'model', owned_by: 'solo-gateway' },
     { id: 'claude-sonnet-4-6[1M]', object: 'model', owned_by: 'solo-gateway' },
     { id: 'claude-haiku-4-5-20251001', object: 'model', owned_by: 'solo-gateway' },
     { id: 'claude-haiku-4-5-20251001[1M]', object: 'model', owned_by: 'solo-gateway' },
+    // SOLO native model names — 用户可以直接填这些
+    { id: 'Doubao_1_6', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'Doubao-Seed-2.0-Code', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'DeepSeek-V4-Pro', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'DeepSeek-V4-Flash', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'kimi-k2.6', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'kimi-k2.5', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'qwen-3.6-plus', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'qwen-3.5', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'glm-5.1', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'glm-5', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'glm-5v-turbo', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'minimax-m2.7', object: 'model', owned_by: 'solo-gateway' },
+    { id: 'minimax-m2.5', object: 'model', owned_by: 'solo-gateway' },
   ];
   if (!token) {
     res.json({ object: 'list', data: anthropicModels });
