@@ -1,21 +1,84 @@
 # Trae Solo Unlock
 
-> 🌐 [Oh My Trae](https://github.com/oh-my-trae/oh-my-trae) 生态导航
+> 🌐 [Oh My Trae](https://github.com/Oh-My-Trae/oh-my-trae) 生态导航
 >
 > | 🔓 解密 | 💾 记忆 | 🛠️ 解锁 | 🤖 Solo |
 > |---------|---------|----------|---------|
-> | [trae-db-decrypt](https://github.com/oh-my-trae/trae-db-decrypt) | [trae-to-claude-mem](https://github.com/oh-my-trae/trae-to-claude-mem) | [trae-unlock](https://github.com/oh-my-trae/trae-unlock) | **trae-solo-unlock** |
+> | [trae-db-decrypt](https://github.com/Oh-My-Trae/trae-db-decrypt) | [trae-to-claude-mem](https://github.com/Oh-My-Trae/trae-to-claude-mem) | [trae-unlock](https://github.com/Oh-My-Trae/trae-unlock) | **trae-solo-unlock** |
 
-> TRAE SOLO CN 魔改仓库 — Gateway 拦截、MCP Tools 扩展、源码研究工具链
+> TRAE SOLO CN 魔改仓库 — SOLO API Gateway、MCP Tools 扩展、源码研究
+
+## SOLO API Gateway
+
+把 SOLO 的 13 个免费模型（DeepSeek V4、Kimi K2.6、通义千问 3.6 等）通过 OpenAI / Anthropic 兼容 API 暴露出来，可用于 Claude Code 及其他兼容工具。
+
+### 快速开始
+
+```bash
+cd gateway
+npm install
+npm run build
+npm start
+```
+
+启动后：
+- API: `http://localhost:18080`
+- 登录页: `http://localhost:18081`（用于获取 JWT Token）
+
+### 接入 Claude Code
+
+在项目的 `.claude/settings.json` 中添加：
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:18080",
+    "ANTHROPIC_AUTH_TOKEN": "sk-solo-gateway",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "kimi-k2.6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "DeepSeek-V4-Flash",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "DeepSeek-V4-Pro"
+  }
+}
+```
+
+### 可用模型
+
+| 模型名 | 说明 |
+|--------|------|
+| `Doubao_1_6` | 豆包 Seed Code（默认） |
+| `Doubao-Seed-2.0-Code` | 豆包 Seed 2.0 |
+| `DeepSeek-V4-Pro` | DeepSeek V4 Pro |
+| `DeepSeek-V4-Flash` | DeepSeek V4 Flash |
+| `kimi-k2.6` | Kimi K2.6 |
+| `kimi-k2.5` | Kimi K2.5 |
+| `qwen-3.6-plus` | 通义千问 3.6 Plus |
+| `qwen-3.5` | 通义千问 3.5 |
+| `glm-5.1` | 智谱 GLM-5.1 |
+| `glm-5` | 智谱 GLM-5 |
+| `glm-5v-turbo` | 智谱 GLM-5V Turbo |
+| `minimax-m2.7` | MiniMax M2.7 |
+| `minimax-m2.5` | MiniMax M2.5 |
+
+### 已知限制
+
+SOLO 模型运行在云端沙箱中，**无法读写本地文件**。适合智能问答、代码审查、文本生成，不适合直接用于本地项目开发。详见 [docs/solo-gateway-story.md](docs/solo-gateway-story.md)。
+
+### Docker 部署
+
+```bash
+cd gateway
+docker compose up -d
+```
 
 ## 项目结构
 
 ```
 trae-solo-unlock/
-├── gateway/              # SOLO API Gateway - OpenAI 兼容 API 拦截/转发
-│   ├── src/
-│   ├── package.json
-│   └── tsconfig.json
+├── gateway/              # SOLO API Gateway
+│   ├── src/              # TypeScript 源码
+│   ├── bin/              # npx 入口
+│   ├── Dockerfile
+│   └── docker-compose.yml
 ├── mcp-tools/            # MCP 工具扩展
 │   ├── supabase-connector/
 │   ├── computer-use-enhanced/
@@ -25,29 +88,10 @@ trae-solo-unlock/
 ├── sub-agents/           # 子代理配置
 ├── docs/                 # 文档
 │   ├── project-context.md
-│   ├── git-conventions.md
-│   └── ai-collaboration.md
+│   ├── solo-gateway-story.md
+│   └── ...
 └── AGENTS.md             # AI 协作指南
 ```
-
-## 核心组件
-
-### Gateway (`gateway/`)
-
-SOLO API Gateway，拦截/转发/暴露 OpenAI 兼容 API。
-
-```bash
-cd gateway
-npm install
-npm run build
-npm start
-```
-
-### MCP Tools (`mcp-tools/`)
-
-- **supabase-connector**: Supabase 数据库连接
-- **computer-use-enhanced**: 增强型计算机使用能力
-- **file-processor**: 文件处理工具
 
 ## 源码研究
 
@@ -56,17 +100,6 @@ npm start
 - 版本: appVersion=0.1.7, tronBuildVersion=2.3.24253
 - 运行模式: solo-lite
 - 源码位置: `D:\apps\TRAE SOLO CN`
-
-### 关键文件路径
-
-| 组件 | 路径 |
-|------|------|
-| 主进程 | `resources/app/out/main.js` |
-| 工作台 | `resources/app/out/vs/code/electron-browser/solo/workbench.js` |
-| 产品配置 | `resources/app/product.json` |
-| AI Agent 模块 | `resources/app/modules/ai-agent/` (端口 40005) |
-| CKG 模块 | `resources/app/modules/ckg/` (端口 50000) |
-| MCP 扩展 | `resources/app/extensions/byted-solo.builtin-mcp/` |
 
 ## 协作规则
 

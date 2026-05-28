@@ -1,7 +1,7 @@
 # AGENTS.md — AI 启动引导
 
 ## 项目
-TRAE SOLO CN 魔改仓库。源码: `D:\apps\TRAE SOLO CN`
+TRAE SOLO CN 魔改仓库，包含 SOLO API Gateway 和源码研究。源码: `D:\apps\TRAE SOLO CN`
 
 ## 知识获取（必读）
 **开始任何任务前，必须先查询 Memory MCP 获取已持久化的研究知识：**
@@ -19,4 +19,11 @@ TRAE SOLO CN 魔改仓库。源码: `D:\apps\TRAE SOLO CN`
 - `docs/git-conventions.md` — Git提交规范
 - `docs/project-context.md` — 关键文件路径与架构
 - `docs/ai-collaboration.md` — 跨AI协作协议
+- `docs/solo-gateway-story.md` — SOLO Gateway 探索记录
 - `.trae/specs/research-solo-source/` — 源码研究规格文档
+
+## Gateway 开发
+- 源码: `gateway/src/` (TypeScript)
+- 构建: `cd gateway && npm run build`
+- 启动: `cd gateway && npm start`
+- API 协议: 参见 `gateway/src/constants.ts` 和 `gateway/src/protocol.ts`
